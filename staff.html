@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#1B2A49">
+  <title>إعدادية الرياحي — بوابة الكادر والإدارة</title>
+  <link rel="manifest" href="./manifest.json">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+  <style>
+    :root {
+      --primary: #1d4ed8; --primary-dark: #1e3a8a; --navy: #1B2A49; --gold: #C9A227;
+      --bg: #f3f5f9; --card: #ffffff; --text: #1f2937; --muted: #6b7280; --border: #e5e7eb; --soft: #f8fafc;
+      --ok-bg: #dcfce7; --ok: #166534; --err-bg: #fee2e2; --err: #991b1b; --warn-bg: #fef3c7; --warn: #92400e;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 14px; font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); direction: rtl; }
+    .container { max-width: 760px; margin: 10px auto; background: var(--card); padding: 24px; border-radius: 16px; box-shadow: 0 6px 24px rgba(27,42,73,.08); }
+    .container.narrow { max-width: 390px; text-align: center; margin-top: 40px; }
+    .container.wide { max-width: 1040px; }
+    .view { display: none; }
+    #login-view { display: block; }
+    h2 { text-align: center; margin: 0 0 4px; color: var(--navy); }
+    .subtitle { text-align: center; color: var(--muted); margin: 0 0 18px; font-size: 14px; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .link-btn { background: none; border: none; color: var(--muted); cursor: pointer; font: inherit; font-size: 14px; text-decoration: underline; }
+    label { display: block; margin: 12px 0 6px; font-weight: 600; color: #374151; }
+    input[type="text"], input[type="url"], input[type="date"], select, textarea {
+      width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; font: inherit; font-size: 15px; background: #fff;
+    }
+    .row { display: flex; gap: 10px; }
+    .row > * { flex: 1; }
+    fieldset { border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; margin: 16px 0 0; background: var(--soft); }
+    legend { font-weight: 700; color: var(--primary-dark); padding: 0 8px; }
+    .btn { display: inline-block; border: none; border-radius: 10px; padding: 10px 16px; font: inherit; font-weight: 700; cursor: pointer; background: #e5e7eb; color: var(--text); }
+    .btn:disabled { opacity: .6; cursor: not-allowed; }
+    .btn-primary { width: 100%; margin-top: 18px; padding: 12px; font-size: 16px; color: #fff; background: linear-gradient(145deg, var(--primary), var(--primary-dark)); }
+    .btn-blue { background: var(--primary); color: #fff; }
+    .btn-red { background: #fee2e2; color: #b91c1c; }
+    .btn-gold { background: #fdf4d7; color: #7a5d00; }
+    .btn-green { background: #dcfce7; color: #166534; }
+    .btn-sm { padding: 4px 10px; font-size: 13px; border-radius: 8px; }
+    .status { margin-top: 12px; padding: 12px; border-radius: 10px; display: none; line-height: 1.8; }
+    .status.success { background: var(--ok-bg); color: var(--ok); }
+    .status.error { background: var(--err-bg); color: var(--err); }
+    .status.warning { background: var(--warn-bg); color: var(--warn); }
+    .status.info { background: #e0e7ff; color: #3730a3; }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip { display: inline-flex; align-items: center; padding: 6px 14px; border: 1.5px solid var(--border); border-radius: 999px; background: #fff; cursor: pointer; font-weight: 600; }
+    .chip input { display: none; }
+    .chip.on { background: var(--primary); border-color: var(--primary); color: #fff; }
+    .editor { border: 1px solid var(--border); border-radius: 10px; background: #fff; margin-top: 10px; overflow: hidden; }
+    .toolbar { display: flex; flex-wrap: wrap; gap: 2px; padding: 5px; border-bottom: 1px solid var(--border); background: #f9fafb; }
+    .toolbar button { border: none; background: none; border-radius: 6px; padding: 4px 9px; cursor: pointer; font: inherit; font-size: 13px; }
+    .editable { min-height: 90px; padding: 10px 12px; line-height: 1.8; outline: none; }
+    .editable:empty:before { content: attr(data-placeholder); color: #9ca3af; }
+    .tabs { display: flex; gap: 4px; border-bottom: 2px solid var(--border); margin: 16px 0; overflow-x: auto; }
+    .tab { background: none; border: none; border-bottom: 3px solid transparent; padding: 10px 14px; font: inherit; font-weight: 700; color: var(--muted); cursor: pointer; white-space: nowrap; }
+    .tab.active { color: var(--primary); border-color: var(--primary); }
+    .panel { display: none; }
+    .panel.active { display: block; }
+    .card { border: 1px solid var(--border); border-radius: 12px; padding: 16px; background: var(--soft); margin-bottom: 14px; }
+    .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 12px; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; background: #fff; }
+    th, td { padding: 9px 10px; border-bottom: 1px solid var(--border); text-align: right; }
+    th { background: #f1f5f9; color: #334155; }
+    .check { display: flex; align-items: center; gap: 8px; margin: 10px 0; font-weight: 600; }
+    .check input { width: 18px; height: 18px; }
+    @media (max-width: 600px) {
+      body { padding: 0; background: #fff; }
+      .container, .container.wide { margin: 0; padding: 16px; border-radius: 0; box-shadow: none; }
+      .row { flex-direction: column; gap: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div id="login-view" class="view">
+    <div class="container narrow">
+      <h2>إعدادية الرياحي</h2>
+      <p class="subtitle">بوابة الكادر التدريسي والإدارة</p>
+      <form id="login-form">
+        <input type="text" id="userId" placeholder="رمز المستخدم" required autocomplete="off">
+        <label class="check" style="justify-content:center;font-weight:400"><input type="checkbox" id="remember" checked> تذكّرني على هذا الجهاز</label>
+        <button class="btn btn-primary" id="login-btn" type="submit">دخول</button>
+      </form>
+      <div id="login-status" class="status"></div>
+    </div>
+  </div>
+
+  <div id="teacher-view" class="view">
+    <div class="container">
+      <div class="topbar">
+        <button type="button" class="btn btn-sm btn-gold" id="staff-notify-btn">🔔 تفعيل إشعارات التذكير</button>
+        <button type="button" class="link-btn" data-logout>تسجيل الخروج</button>
+      </div>
+      <h2 id="welcome-message"></h2>
+      <p class="subtitle">إرسال التحضير اليومي — إعدادية الرياحي</p>
+
+      <form id="daily-form">
+        <label for="class-select">الصف والمادة</label>
+        <select id="class-select" required></select>
+
+        <label>الشعب المشمولة</label>
+        <div id="divisions-box" class="chips"></div>
+
+        <fieldset>
+          <legend>🔙 ما تم شرحه سابقاً</legend>
+          <div class="row">
+            <input type="text" name="prevPageFrom" placeholder="من صفحة" required>
+            <input type="text" name="prevPageTo" placeholder="إلى صفحة" required>
+          </div>
+          <div class="editor">
+            <div class="toolbar">
+              <button type="button" data-cmd="bold"><b>عريض</b></button>
+              <button type="button" data-cmd="italic"><i>مائل</i></button>
+              <button type="button" data-cmd="underline"><u>تسطير</u></button>
+              <button type="button" data-cmd="removeFormat">✕ مسح</button>
+            </div>
+            <div class="editable" id="prev-editor" contenteditable="true" data-placeholder="المحتوى المشروح..."></div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>🔜 المحاضرة القادمة</legend>
+          <input type="text" name="topic" placeholder="اسم الموضوع..." required>
+          <div class="row" style="margin-top:10px">
+            <input type="text" name="pageFrom" placeholder="من صفحة" required>
+            <input type="text" name="pageTo" placeholder="إلى صفحة" required>
+          </div>
+          <div class="editor">
+            <div class="toolbar">
+              <button type="button" data-cmd="bold"><b>عريض</b></button>
+              <button type="button" data-cmd="italic"><i>مائل</i></button>
+              <button type="button" data-cmd="underline"><u>تسطير</u></button>
+              <button type="button" data-cmd="removeFormat">✕ مسح</button>
+            </div>
+            <div class="editable" id="next-editor" contenteditable="true" data-placeholder="المحتوى المطلوب..."></div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>📎 المرفقات والروابط</legend>
+          <input type="file" id="file-input" multiple>
+          <ul id="file-list" style="padding:0;list-style:none"></ul>
+          <input type="url" name="youtubeLink" placeholder="رابط فيديو يوتيوب (اختياري)..." style="margin-top:10px">
+        </fieldset>
+
+        <button type="submit" class="btn btn-primary" id="submit-btn">إرسال التحضير</button>
+      </form>
+      <div id="teacher-status" class="status"></div>
+    </div>
+  </div>
+
+  <div id="admin-view" class="view">
+    <div class="container wide">
+      <div class="topbar">
+        <span style="font-weight:700;color:var(--navy)">لوحة تحكم إعدادية الرياحي</span>
+        <button type="button" class="link-btn" data-logout>تسجيل الخروج</button>
+      </div>
+      <h2 id="admin-welcome-message"></h2>
+
+      <div class="tabs">
+        <button type="button" class="tab active" data-tab="notify">🔔 الإشعارات الفورية</button>
+        <button type="button" class="tab" data-tab="log">🗂️ السجل</button>
+      </div>
+      <div id="admin-status" class="status"></div>
+
+      <div class="panel active" id="panel-notify">
+        <div class="card">
+          <h4>إرسال إشعار فوري للطلاب أو المدرسين</h4>
+          <label for="n-title">عنوان الإشعار</label>
+          <input type="text" id="n-title" value="تنبيه من إدارة إعدادية الرياحي">
+          <label for="n-body">نص الإشعار</label>
+          <textarea id="n-body" rows="3" placeholder="اكتب نص الإشعار هنا...">يرجى متابعة التحضير اليومي والواجبات المنشورة.</textarea>
+          <div class="row" style="margin-top:14px">
+            <button type="button" class="btn btn-blue" data-push="students">📢 إشعار لجميع الطلاب</button>
+            <button type="button" class="btn btn-gold" data-push="teachers">👨‍🏫 إشعار لجميع المدرسين</button>
+            <button type="button" class="btn btn-green" data-push="missing">⏰ تذكير من لم يرفع اليوم</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" id="panel-log">
+        <div class="card">
+          <div class="row" style="align-items:flex-end">
+            <div><label for="l-date">التاريخ</label><input type="date" id="l-date"></div>
+            <div style="flex:0 0 auto"><button type="button" class="btn btn-blue" id="log-load">عرض السجل</button></div>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>الوقت</th><th>المدرس</th><th>الصف</th><th>المادة</th><th>الشعب</th><th>الموضوع</th></tr></thead>
+            <tbody id="log-body"><tr><td colspan="6" style="text-align:center">اختر التاريخ واضغط عرض.</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const CONFIG = {
+    API_URL: "https://script.google.com/macros/s/AKfycbwQBStZwCwavJHFWH_FZFD98IrnD8JjXcwStxC9TUQfQk3dRwpMHr_nnRDtwbqstCVgGA/exec",
+    ONESIGNAL_APP_ID: "649b3d75-0371-4630-8294-0cbd915c454b"
+  };
+
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+  let authToken = localStorage.getItem('riyahi_staff_token') || '';
+  let currentUser = null, teacherOptions = [], filesQueue = [];
+
+  async function api(action, payload = {}) {
+    const res = await fetch(CONFIG.API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action, token: authToken, ...payload })
+    });
+    return res.json();
+  }
+
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  OneSignalDeferred.push(async function(OneSignal) {
+    await OneSignal.init({ appId: CONFIG.ONESIGNAL_APP_ID, allowLocalhostAsSecureOrigin: true });
+  });
+
+  $('staff-notify-btn').addEventListener('click', () => {
+    OneSignalDeferred.push(async function(OneSignal) {
+      await OneSignal.Notifications.requestPermission();
+      if (OneSignal.Notifications.permission && currentUser) {
+        await OneSignal.User.addTags({ role: 'teacher', userId: currentUser.userId });
+        $('staff-notify-btn').textContent = '✔️ الإشعارات مفعّلة';
+      }
+    });
+  });
+
+  function showStatus(el, msg, type) {
+    el.innerHTML = msg;
+    el.className = 'status ' + (type || 'info');
+    el.style.display = 'block';
+  }
+  function showView(v) {
+    ['login', 'teacher', 'admin'].forEach(x => $(x + '-view').style.display = x === v ? 'block' : 'none');
+  }
+
+  document.querySelectorAll('.toolbar button').forEach(b => {
+    b.addEventListener('mousedown', e => e.preventDefault());
+    b.addEventListener('click', () => document.execCommand(b.dataset.cmd, false, null));
+  });
+
+  async function doLogin(byToken) {
+    const userId = $('userId').value.trim();
+    if (!byToken && !userId) return;
+    $('login-btn').disabled = true;
+    showStatus($('login-status'), 'جاري الدخول...', 'info');
+    try {
+      const r = byToken ? await api('loginWithToken', { token: authToken }) : await api('login', { userId });
+      if (!r.success) {
+        if (byToken) localStorage.removeItem('riyahi_staff_token');
+        throw new Error(r.error || 'فشل تسجيل الدخول');
+      }
+      authToken = r.token;
+      currentUser = r.user;
+      if ($('remember').checked) localStorage.setItem('riyahi_staff_token', authToken);
+      $('login-status').style.display = 'none';
+      if (r.view === 'teacher') {
+        teacherOptions = r.data.options || [];
+        $('welcome-message').textContent = 'أهلاً بك، ' + r.user.userName;
+        $('class-select').innerHTML = teacherOptions.map((o, i) => `<option value="${i}">${esc(o.className)} — ${esc(o.subject)}</option>`).join('');
+        renderDivs();
+        showView('teacher');
+      } else {
+        $('admin-welcome-message').textContent = 'أهلاً بك، ' + r.user.userName;
+        const d = new Date();
+        $('l-date').value = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        showView('admin');
+      }
+    } catch (err) {
+      showStatus($('login-status'), esc(err.message), 'error');
+    } finally {
+      $('login-btn').disabled = false;
+    }
+  }
+
+  $('login-form').addEventListener('submit', e => { e.preventDefault(); doLogin(false); });
+  document.querySelectorAll('[data-logout]').forEach(b => b.addEventListener('click', () => {
+    localStorage.removeItem('riyahi_staff_token');
+    authToken = ''; currentUser = null;
+    showView('login');
+  }));
+
+  function renderDivs() {
+    const opt = teacherOptions[+$('class-select').value];
+    if (!opt) return;
+    $('divisions-box').innerHTML = opt.divisions.map(d =>
+      `<label class="chip on"><input type="checkbox" value="${esc(d)}" checked>شعبة ${esc(d)}</label>`
+    ).join('');
+  }
+  $('class-select').addEventListener('change', renderDivs);
+  $('divisions-box').addEventListener('change', () => {
+    $('divisions-box').querySelectorAll('.chip').forEach(c => c.classList.toggle('on', c.querySelector('input').checked));
+  });
+
+  $('file-input').addEventListener('change', e => {
+    filesQueue = [...e.target.files].slice(0, 10);
+    $('file-list').innerHTML = filesQueue.map(f => `<li style="font-size:13px;margin-top:4px">📎 ${esc(f.name)}</li>`).join('');
+  });
+
+  function toBase64(file) {
+    return new Promise((res, rej) => {
+      const r = new FileReader();
+      r.onload = () => res(String(r.result).split(',')[1] || '');
+      r.onerror = () => rej(r.error);
+      r.readAsDataURL(file);
+    });
+  }
+
+  $('daily-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const opt = teacherOptions[+$('class-select').value];
+    const divisions = [...$('divisions-box').querySelectorAll('input:checked')].map(i => i.value);
+    if (!divisions.length) { showStatus($('teacher-status'), 'اختر شعبة واحدة على الأقل.', 'error'); return; }
+    const f = $('daily-form');
+    $('submit-btn').disabled = true;
+    showStatus($('teacher-status'), 'جاري إرسال التحضير...', 'info');
+    try {
+      const r = await api('submitPreparation', {
+        form: {
+          userId: currentUser.userId, classId: opt.classId, subject: opt.subject, divisions,
+          prevPageFrom: f.prevPageFrom.value, prevPageTo: f.prevPageTo.value, prevLesson: $('prev-editor').innerText,
+          topic: f.topic.value, pageFrom: f.pageFrom.value, pageTo: f.pageTo.value, nextLesson: $('next-editor').innerText,
+          youtubeLink: f.youtubeLink.value, filesCount: filesQueue.length
+        }
+      });
+      if (!r.success) throw new Error(r.message);
+      for (let i = 0; i < filesQueue.length; i++) {
+        showStatus($('teacher-status'), `جاري رفع الملف ${i+1} من ${filesQueue.length}...`, 'info');
+        const data = await toBase64(filesQueue[i]);
+        await api('uploadAttachment', {
+          file: { userId: currentUser.userId, classId: opt.classId, subject: opt.subject, divisions: divisions.join('، '), name: filesQueue[i].name, type: filesQueue[i].type, data }
+        });
+      }
+      await api('publishDailySummary', { classId: opt.classId });
+      showStatus($('teacher-status'), '✔️ تم إرسال التحضير ونشر الخلاصة وإشعار الطلاب بنجاح!', 'success');
+      f.reset(); $('prev-editor').innerHTML = ''; $('next-editor').innerHTML = ''; filesQueue = []; $('file-list').innerHTML = '';
+      renderDivs();
+    } catch (err) {
+      showStatus($('teacher-status'), esc(err.message), 'error');
+    } finally {
+      $('submit-btn').disabled = false;
+    }
+  });
+
+  document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x === t));
+    document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + t.dataset.tab));
+  }));
+
+  document.querySelectorAll('[data-push]').forEach(btn => btn.addEventListener('click', async () => {
+    showStatus($('admin-status'), 'جاري إرسال الإشعار...', 'info');
+    try {
+      const r = await api('adminSendPush', {
+        target: btn.dataset.push,
+        title: $('n-title').value.trim(),
+        body: $('n-body').value.trim()
+      });
+      showStatus($('admin-status'), esc(r.message || 'تم الإرسال'), r.success ? 'success' : 'error');
+    } catch (err) {
+      showStatus($('admin-status'), esc(err.message), 'error');
+    }
+  }));
+
+  $('log-load').addEventListener('click', async () => {
+    $('log-body').innerHTML = '<tr><td colspan="6" style="text-align:center">جاري التحميل...</td></tr>';
+    const r = await api('getLog', { dateStr: $('l-date').value });
+    if (!r.success) { $('log-body').innerHTML = `<tr><td colspan="6">${esc(r.message)}</td></tr>`; return; }
+    $('log-body').innerHTML = (r.rows || []).map(x =>
+      `<tr><td>${esc(x.time)}</td><td>${esc(x.userName)}</td><td>${esc(x.className)}</td><td>${esc(x.subject)}</td><td>${esc(x.divisions)}</td><td>${esc(x.topic)}</td></tr>`
+    ).join('') || '<tr><td colspan="6" style="text-align:center">لا توجد تحاضير في هذا اليوم.</td></tr>';
+  });
+
+  if (authToken) doLogin(true);
+</script>
+</body>
+</html>

@@ -1,2514 +1,832 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html dir="rtl" lang="ar">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>نظام الإمداد V7.0</title>
-    
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    
-    <!-- Chart.js للإحصائيات البيانية -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#1B2A49">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="إعدادية الرياحي">
+  <link rel="manifest" href="manifest.json">
+  <title>إعدادية الرياحي — بوابة التحضير اليومي للطلاب</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+  <style>
+    :root {
+      --navy: #1B2A49;
+      --navy-light: #263B66;
+      --primary: #1D4ED8;
+      --primary-soft: #EFF6FF;
+      --gold: #C9A227;
+      --gold-soft: #FEF9E7;
+      --bg: #F3F6FA;
+      --card: #FFFFFF;
+      --text: #1E293B;
+      --muted: #64748B;
+      --border: #E2E8F0;
+      --ok-bg: #DCFCE7;
+      --ok: #166534;
+      --err-bg: #FEE2E2;
+      --err: #991B1B;
+      --radius: 16px;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      margin: 0;
+      font-family: 'Cairo', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      direction: rtl;
+      min-height: 100vh;
+      padding-bottom: env(safe-area-inset-bottom, 24px);
+    }
 
-    <style>
-        body { 
-            font-family: 'Cairo', sans-serif; 
-            background-color: #f8fafc; 
-            margin: 0;
-            padding: 0;
-        }
-        
-        /* تأثيرات الظهور */
-        .fade-in { animation: fadeIn 0.3s ease-in-out; }
-        @keyframes fadeIn { 
-            from { opacity: 0; transform: translateY(10px); } 
-            to { opacity: 1; transform: translateY(0); } 
-        }
-        
-        /* الأزرار العائمة */
-        .fab-btn {
-            position: fixed; bottom: 25px; left: 25px;
-            width: 65px; height: 65px;
-            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-            color: white;
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 35px;
-            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
-            z-index: 1000;
-            transition: all 0.3s;
-            cursor: pointer;
-            border: none;
-        }
-        .fab-btn:hover { transform: scale(1.1); box-shadow: 0 6px 20px rgba(37, 99, 235, 0.6); }
-        .fab-btn:active { transform: scale(0.95); }
-        
-        /* تبويبات */
-        .tab-active { 
-            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); 
-            color: white; 
-            border: none;
-            box-shadow: 0 2px 5px rgba(37, 99, 235, 0.3);
-        }
-        .tab-inactive { 
-            background: white; 
-            color: #64748b; 
-            border: 1px solid #e2e8f0;
-            transition: all 0.2s;
-        }
-        .tab-inactive:hover { 
-            background: #f1f5f9; 
-            border-color: #cbd5e1; 
-        }
-        
-        /* تحسينات عامة */
-        .hidden { display: none !important; }
-        .card { 
-            background: white; 
-            border-radius: 12px; 
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05); 
-            border: 1px solid #e2e8f0;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .card:hover { 
-            transform: translateY(-2px); 
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08); 
-        }
-        
-        /* شاشة التحميل */
-        #loader {
-            z-index: 99999;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        
-        /* شريط التقدم */
-        .progress-bar {
-            height: 4px;
-            background: linear-gradient(90deg, #2563eb 0%, #60a5fa 100%);
-            border-radius: 2px;
-            transition: width 0.3s ease;
-        }
-        
-        /* ألوان الحالات */
-        .status-pending { background-color: #fef3c7; color: #92400e; }
-        .status-in-progress { background-color: #dbeafe; color: #1e40af; }
-        .status-completed { background-color: #d1fae5; color: #065f46; }
-        .status-returned { background-color: #fee2e2; color: #991b1b; }
-        .status-cancelled { background-color: #f3f4f6; color: #374151; }
-        
-        /* تأثيرات النصوص */
-        .text-gradient {
-            background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        
-        /* أنيميشن للبطاقات */
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateX(20px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-        .animate-slide-in { animation: slideIn 0.3s ease-out; }
-    </style>
+    /* الشريط العلوي الثابت */
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+      color: #fff;
+      padding: calc(14px + env(safe-area-inset-top, 0px)) 16px 14px;
+      box-shadow: 0 4px 16px rgba(27, 42, 73, 0.18);
+    }
+    .header-inner {
+      max-width: 820px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand-icon {
+      width: 42px; height: 42px; border-radius: 12px;
+      background: rgba(201, 162, 39, 0.18);
+      border: 1.5px solid rgba(201, 162, 39, 0.55);
+      display: grid; place-items: center; font-size: 20px; flex-shrink: 0;
+    }
+    .brand h1 { margin: 0; font-size: 18px; font-weight: 800; line-height: 1.25; }
+    .brand-sub { font-size: 13px; color: #CBD5E1; margin-top: 2px; }
+    .brand-sub strong { color: #FDE68A; }
+
+    .header-actions { display: flex; align-items: center; gap: 6px; }
+    .icon-btn {
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+      border-radius: 10px;
+      padding: 7px 12px;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: background .2s;
+    }
+    .icon-btn:hover { background: rgba(255,255,255,0.2); }
+    .icon-btn.notify-on { background: rgba(34, 197, 94, 0.22); border-color: rgba(134, 239, 172, 0.5); color: #DCFCE7; }
+    .icon-btn.notify-off { background: linear-gradient(135deg, #D97706, #B45309); border-color: transparent; }
+
+    .wrap { max-width: 820px; margin: 0 auto; padding: 16px; }
+
+    /* شاشة اختيار الصف والشعبة */
+    .setup-card {
+      max-width: 460px;
+      margin: 28px auto;
+      background: var(--card);
+      border-radius: 20px;
+      padding: 26px 22px;
+      box-shadow: 0 10px 30px rgba(27, 42, 73, 0.08);
+      border: 1px solid var(--border);
+    }
+    .setup-card h2 { margin: 0 0 6px; color: var(--navy); text-align: center; font-size: 21px; }
+    .setup-card p { margin: 0 0 20px; color: var(--muted); text-align: center; font-size: 14px; }
+    .step-label { font-weight: 700; color: var(--navy); margin: 14px 0 8px; font-size: 15px; display: block; }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip-btn {
+      flex: 1 1 auto;
+      min-width: 72px;
+      padding: 10px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      background: #fff;
+      color: var(--text);
+      font: inherit;
+      font-weight: 700;
+      font-size: 15px;
+      cursor: pointer;
+      transition: all .18s;
+    }
+    .chip-btn.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(29, 78, 216, 0.25);
+    }
+    .btn-main {
+      width: 100%;
+      margin-top: 22px;
+      padding: 13px;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--primary), #1E3A8A);
+      color: #fff;
+      font: inherit;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .btn-main:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* شريط الفلترة والمعلومات */
+    .meta-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+    .filter-pills { display: flex; gap: 6px; }
+    .pill {
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--muted);
+      padding: 5px 13px;
+      border-radius: 999px;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .pill.active { background: var(--navy); color: #fff; border-color: var(--navy); }
+    .updated-at { font-size: 12.5px; color: var(--muted); }
+
+    /* بطاقات المواد */
+    .grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
+    @media (min-width: 720px) { .grid { grid-template-columns: 1fr 1fr; } }
+
+    .subject-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      border-top: 4px solid var(--accent, var(--primary));
+      box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      transition: transform .15s, box-shadow .15s;
+    }
+    .subject-card:hover { box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08); }
+
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .subject-name {
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--navy);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .badge-new {
+      background: #DCFCE7;
+      color: #15803D;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 999px;
+    }
+    .card-time { font-size: 12px; color: var(--muted); white-space: nowrap; }
+    .teacher-line { font-size: 13.5px; color: var(--muted); margin-bottom: 10px; }
+    .topic-title {
+      font-size: 15.5px;
+      font-weight: 700;
+      color: var(--text);
+      background: #F8FAFC;
+      border-right: 3px solid var(--accent, var(--primary));
+      padding: 8px 10px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+
+    .pages-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+    .page-box {
+      background: #F8FAFC;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 7px 10px;
+      font-size: 12.5px;
+    }
+    .page-box span { display: block; color: var(--muted); font-size: 11.5px; }
+    .page-box strong { color: var(--navy); font-size: 13.5px; }
+
+    /* قصّ النص الطويل بأناقة حتى لا تتشوه الصفحة */
+    .preview-text {
+      font-size: 14px;
+      line-height: 1.75;
+      color: #334155;
+      margin: 4px 0 12px;
+      display: -webkit-box;
+      -webkit-line-clamp: 4;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      word-break: break-word;
+    }
+    .prev-hint {
+      font-size: 12.5px;
+      color: var(--muted);
+      background: #FFFBEB;
+      border: 1px dashed #FCD34D;
+      border-radius: 8px;
+      padding: 6px 10px;
+      margin-bottom: 12px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .card-actions {
+      margin-top: auto;
+      display: flex;
+      gap: 8px;
+      padding-top: 8px;
+      border-top: 1px solid #F1F5F9;
+    }
+    .btn-details {
+      flex: 1;
+      border: none;
+      border-radius: 10px;
+      padding: 9px 12px;
+      font: inherit;
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+      background: var(--primary-soft);
+      color: var(--primary);
+    }
+    .btn-details:hover { background: #DBEAFE; }
+    .btn-prev {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 9px 12px;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      background: #fff;
+      color: var(--navy);
+    }
+    .btn-prev:hover { background: #F8FAFC; }
+
+    /* نافذة التفاصيل الكاملة (Modal) */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.55);
+      backdrop-filter: blur(3px);
+      z-index: 100;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 0;
+    }
+    .modal-backdrop.open { display: flex; }
+    @media (min-width: 640px) {
+      .modal-backdrop { align-items: center; padding: 20px; }
+    }
+    .modal {
+      width: 100%;
+      max-width: 640px;
+      max-height: 88vh;
+      background: #fff;
+      border-radius: 22px 22px 0 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+      animation: slideUp .22s ease-out;
+    }
+    @media (min-width: 640px) { .modal { border-radius: 20px; } }
+    @keyframes slideUp { from { transform: translateY(24px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+    .modal-head {
+      background: var(--navy);
+      color: #fff;
+      padding: 16px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+    .modal-head h3 { margin: 0; font-size: 18px; }
+    .modal-close {
+      background: rgba(255,255,255,0.15);
+      border: none;
+      color: #fff;
+      width: 34px; height: 34px;
+      border-radius: 10px;
+      font-size: 18px;
+      cursor: pointer;
+    }
+    .modal-tabs {
+      display: flex;
+      background: #F1F5F9;
+      padding: 6px;
+      gap: 6px;
+      border-bottom: 1px solid var(--border);
+    }
+    .modal-tab {
+      flex: 1;
+      border: none;
+      background: transparent;
+      padding: 8px;
+      border-radius: 10px;
+      font: inherit;
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--muted);
+      cursor: pointer;
+    }
+    .modal-tab.active { background: #fff; color: var(--navy); box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
+
+    .modal-body {
+      padding: 18px;
+      overflow-y: auto;
+      line-height: 1.9;
+      font-size: 15px;
+    }
+    .detail-block {
+      background: #F8FAFC;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+    .detail-block h4 {
+      margin: 0 0 8px;
+      font-size: 14.5px;
+      color: var(--primary);
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .rich-content { white-space: pre-wrap; word-break: break-word; color: var(--text); }
+    .rich-content code { background: #E2E8F0; padding: 1px 6px; border-radius: 5px; font-family: inherit; }
+    .rich-content blockquote {
+      margin: 8px 0; padding: 8px 12px;
+      border-right: 4px solid var(--primary);
+      background: #EFF6FF; border-radius: 8px;
+    }
+    .rich-content a { color: var(--primary); font-weight: 700; }
+    .yt-btn {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      background: #FEF2F2; color: #DC2626; border: 1px solid #FECACA;
+      text-decoration: none; font-weight: 700; padding: 11px; border-radius: 12px; margin-bottom: 10px;
+    }
+    .files-note {
+      background: var(--gold-soft); color: #854D0E; border: 1px solid #FDE68A;
+      padding: 10px 12px; border-radius: 10px; font-size: 13.5px; font-weight: 600;
+    }
+
+    .empty-box, .status-msg {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px 18px;
+      text-align: center;
+      color: var(--muted);
+    }
+    .status-msg.error { background: var(--err-bg); color: var(--err); border-color: #FECACA; padding: 14px; margin-bottom: 14px; }
+    .status-msg.info { background: var(--primary-soft); color: var(--primary); border-color: #BFDBFE; padding: 12px; margin-bottom: 14px; }
+    .skeleton {
+      height: 180px; border-radius: var(--radius);
+      background: linear-gradient(90deg, #E2E8F0 25%, #F1F5F9 50%, #E2E8F0 75%);
+      background-size: 200% 100%; animation: shimmer 1.3s infinite;
+    }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+    .hidden { display: none !important; }
+  </style>
 </head>
-<body class="pb-24">
+<body>
 
-    <!-- شاشة التحميل -->
-    <div id="loader" class="fixed inset-0 z-[99999] flex flex-col items-center justify-center hidden">
-        <div class="animate-spin rounded-full h-16 w-16 border-4 border-white border-t-transparent mb-6"></div>
-        <h1 class="text-3xl font-black text-white mb-2">نظام الإمداد</h1>
-        <p class="text-white/80 mb-8">V7.0 - الإصدار المحسّن</p>
-        <div class="w-64 bg-white/20 rounded-full h-2 overflow-hidden">
-            <div class="progress-bar h-full" id="loadingBar"></div>
+  <header class="header">
+    <div class="header-inner">
+      <div class="brand">
+        <div class="brand-icon">🎓</div>
+        <div>
+          <h1>إعدادية الرياحي</h1>
+          <div class="brand-sub" id="header-sub">بوابة التحضير اليومي للطلاب</div>
         </div>
-        <p class="text-white/80 mt-4 text-sm" id="loadingText">جاري تهيئة النظام...</p>
+      </div>
+      <div class="header-actions hidden" id="header-actions">
+        <button type="button" class="icon-btn notify-off" id="btn-notify">🔔 تفعيل الإشعارات</button>
+        <button type="button" class="icon-btn" id="btn-refresh" title="تحديث">🔄</button>
+        <button type="button" class="icon-btn" id="btn-change" title="تغيير الصف والشعبة">⚙️</button>
+      </div>
     </div>
+  </header>
 
-    <!-- شاشة تسجيل الدخول -->
-    <section id="loginScreen" class="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-blue-50 to-indigo-100">
-        <div class="bg-white w-full max-w-md p-8 rounded-2xl shadow-2xl border border-gray-100">
-            <div class="text-center mb-8">
-                <div class="w-20 h-20 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-                    <i class="bi bi-shield-check text-3xl text-white"></i>
-                </div>
-                <h1 class="text-3xl font-black text-gradient mb-2">نظام الإمداد</h1>
-                <p class="text-gray-500 text-sm">V7.0 - النسخة المحسنة</p>
-            </div>
-            
-            <div class="space-y-6">
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-2">
-                        <i class="bi bi-person-badge mr-2"></i>الرقم الوظيفي
-                    </label>
-                    <input type="text" id="loginId" 
-                           class="w-full p-4 bg-gray-50 border-2 border-gray-200 rounded-xl text-lg font-bold outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                           placeholder="أدخل الرقم الوظيفي" value="101">
-                </div>
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-2">
-                        <i class="bi bi-key mr-2"></i>كلمة المرور
-                    </label>
-                    <input type="password" id="loginPass" 
-                           class="w-full p-4 bg-gray-50 border-2 border-gray-200 rounded-xl text-lg outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                           placeholder="أدخل كلمة المرور" value="123">
-                </div>
-                <button onclick="doLogin()" 
-                        class="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold py-4 rounded-xl text-lg shadow-lg hover:shadow-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-300 transform hover:-translate-y-1">
-                    <i class="bi bi-box-arrow-in-right mr-2"></i>تسجيل الدخول
-                </button>
-                
-                <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 mt-6">
-                    <p class="text-sm text-blue-800 font-bold mb-2"><i class="bi bi-info-circle mr-2"></i>بيانات تجريبية:</p>
-                    <div class="grid grid-cols-2 gap-2 text-xs text-blue-600">
-                        <div class="bg-white/50 p-2 rounded-lg">
-                            <span class="font-bold">101</span> - فني
-                        </div>
-                        <div class="bg-white/50 p-2 rounded-lg">
-                            <span class="font-bold">102</span> - مشتريات
-                        </div>
-                        <div class="bg-white/50 p-2 rounded-lg">
-                            <span class="font-bold">103</span> - مخزن
-                        </div>
-                        <div class="bg-white/50 p-2 rounded-lg">
-                            <span class="font-bold">104</span> - إدارة
-                        </div>
-                    </div>
-                    <p class="text-xs text-blue-500 mt-2">كلمة المرور: <span class="font-bold">123</span></p>
-                </div>
-            </div>
-        </div>
+  <main class="wrap">
+    <div id="global-msg" class="status-msg hidden"></div>
+
+    <!-- شاشة اختيار الصف والشعبة -->
+    <section id="setup-view" class="setup-card hidden">
+      <h2>مرحباً بك في إعدادية الرياحي</h2>
+      <p>اختر صفّك وشعبتك مرة واحدة فقط لتظهر لك تحاضيرك اليومية تلقائياً</p>
+
+      <label class="step-label">1. اختر الصف</label>
+      <div id="class-chips" class="chips"></div>
+
+      <div id="div-section" class="hidden">
+        <label class="step-label">2. اختر الشعبة</label>
+        <div id="div-chips" class="chips"></div>
+      </div>
+
+      <button type="button" class="btn-main" id="btn-save-choice" disabled>عرض التحاضير</button>
     </section>
 
-    <!-- شاشة التطبيق الرئيسية -->
-    <section id="appScreen" class="hidden min-h-screen bg-gradient-to-b from-gray-50 to-blue-50/30">
-        
-        <!-- الهيدر -->
-        <header class="bg-white shadow-md border-b border-gray-100 sticky top-0 z-50">
-            <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
-                <div class="flex items-center gap-4">
-                    <div class="flex items-center gap-3">
-                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-white font-bold text-xl shadow-lg">
-                            <i class="bi bi-box-seam"></i>
-                        </div>
-                        <div>
-                            <h2 id="userName" class="font-bold text-gray-800 text-lg leading-tight">اسم المستخدم</h2>
-                            <div class="flex items-center gap-2">
-                                <span id="userRole" class="text-xs bg-gradient-to-r from-blue-100 to-blue-50 text-blue-700 px-3 py-1 rounded-full border border-blue-200 font-bold"></span>
-                                <span id="userDept" class="text-xs text-gray-500"></span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="flex items-center gap-3">
-                    <!-- إشعارات -->
-                    <button id="notificationsBtn" onclick="showNotifications()" 
-                            class="relative bg-gray-100 hover:bg-gray-200 p-3 rounded-xl transition-colors">
-                        <i class="bi bi-bell text-xl text-gray-600"></i>
-                        <span id="notificationCount" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center hidden">0</span>
-                    </button>
-                    
-                    <!-- تحديث -->
-                    <button onclick="loadData()" 
-                            class="bg-blue-100 hover:bg-blue-200 text-blue-600 p-3 rounded-xl transition-colors" 
-                            title="تحديث البيانات">
-                        <i class="bi bi-arrow-clockwise text-xl"></i>
-                    </button>
-                    
-                    <!-- تصدير Excel -->
-                    <button id="btnExcel" onclick="exportExcel()" 
-                            class="hidden bg-green-100 hover:bg-green-200 text-green-700 px-4 py-3 rounded-xl text-sm font-bold border border-green-200 transition-colors">
-                        <i class="bi bi-file-earmark-excel mr-2"></i>تصدير Excel
-                    </button>
-                    
-                    <!-- تسجيل الخروج -->
-                    <button onclick="doLogout()" 
-                            class="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-4 py-3 rounded-xl text-sm font-bold shadow transition-all duration-300">
-                        <i class="bi bi-box-arrow-left mr-2"></i>تسجيل الخروج
-                    </button>
-                </div>
-            </div>
-            
-            <!-- شريط التبويبات الرئيسي -->
-            <div class="bg-white border-t border-gray-100">
-                <div class="max-w-7xl mx-auto px-4">
-                    <div class="flex gap-1 overflow-x-auto py-2">
-                        <button id="tabDashboard" onclick="switchTab('dashboard')" 
-                                class="px-4 py-3 rounded-lg text-sm font-bold tab-active whitespace-nowrap">
-                            <i class="bi bi-speedometer2 mr-2"></i>لوحة التحكم
-                        </button>
-                        <button id="tabOrders" onclick="switchTab('orders')" 
-                                class="px-4 py-3 rounded-lg text-sm font-bold tab-inactive whitespace-nowrap">
-                            <i class="bi bi-list-task mr-2"></i>الطلبات
-                        </button>
-                        <button id="tabReports" onclick="switchTab('reports')" 
-                                class="px-4 py-3 rounded-lg text-sm font-bold tab-inactive whitespace-nowrap">
-                            <i class="bi bi-bar-chart mr-2"></i>التقارير
-                        </button>
-                        <button id="tabCatalog" onclick="switchTab('catalog')" 
-                                class="px-4 py-3 rounded-lg text-sm font-bold tab-inactive whitespace-nowrap">
-                            <i class="bi bi-boxes mr-2"></i>دليل المواد
-                        </button>
-                        <button id="tabAdmin" onclick="switchTab('admin')" 
-                                class="px-4 py-3 rounded-lg text-sm font-bold tab-inactive whitespace-nowrap">
-                            <i class="bi bi-gear mr-2"></i>الإدارة
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </header>
-
-        <!-- المحتوى الرئيسي -->
-        <main class="max-w-7xl mx-auto p-4">
-            
-            <!-- لوحة التحكم (Dashboard) -->
-            <div id="dashboardTab" class="space-y-6">
-                <!-- إحصائيات سريعة -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div class="card p-5 border-l-4 border-l-blue-500">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <p class="text-gray-500 text-sm font-bold">إجمالي الطلبات</p>
-                                <p class="text-3xl font-black text-gray-800 mt-1" id="statTotal">0</p>
-                            </div>
-                            <div class="bg-blue-100 p-3 rounded-lg">
-                                <i class="bi bi-clipboard-data text-blue-600 text-xl"></i>
-                            </div>
-                        </div>
-                        <div class="mt-3 flex items-center text-sm">
-                            <i class="bi bi-arrow-up-short text-green-500 mr-1"></i>
-                            <span class="text-green-500 font-bold" id="statTotalChange">0%</span>
-                            <span class="text-gray-400 mr-2">من الشهر الماضي</span>
-                        </div>
-                    </div>
-                    
-                    <div class="card p-5 border-l-4 border-l-orange-500">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <p class="text-gray-500 text-sm font-bold">بانتظار المشتريات</p>
-                                <p class="text-3xl font-black text-gray-800 mt-1" id="statPendingPurchase">0</p>
-                            </div>
-                            <div class="bg-orange-100 p-3 rounded-lg">
-                                <i class="bi bi-cart text-orange-600 text-xl"></i>
-                            </div>
-                        </div>
-                        <div class="mt-3">
-                            <div class="flex justify-between text-xs text-gray-500 mb-1">
-                                <span>عالية الأولوية</span>
-                                <span id="statHighPriority">0</span>
-                            </div>
-                            <div class="w-full bg-gray-200 rounded-full h-2">
-                                <div class="bg-orange-500 h-2 rounded-full" id="priorityBar"></div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="card p-5 border-l-4 border-l-purple-500">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <p class="text-gray-500 text-sm font-bold">في المخزن</p>
-                                <p class="text-3xl font-black text-gray-800 mt-1" id="statInStore">0</p>
-                            </div>
-                            <div class="bg-purple-100 p-3 rounded-lg">
-                                <i class="bi bi-box-seam text-purple-600 text-xl"></i>
-                            </div>
-                        </div>
-                        <div class="mt-3 text-sm text-gray-600">
-                            <i class="bi bi-clock-history mr-1"></i>
-                            <span>أقدم طلب: </span>
-                            <span id="oldestStoreOrder" class="font-bold">0 يوم</span>
-                        </div>
-                    </div>
-                    
-                    <div class="card p-5 border-l-4 border-l-green-500">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <p class="text-gray-500 text-sm font-bold">مكتملة</p>
-                                <p class="text-3xl font-black text-gray-800 mt-1" id="statCompleted">0</p>
-                            </div>
-                            <div class="bg-green-100 p-3 rounded-lg">
-                                <i class="bi bi-check-circle text-green-600 text-xl"></i>
-                            </div>
-                        </div>
-                        <div class="mt-3">
-                            <div class="text-sm text-gray-600">
-                                <i class="bi bi-speedometer2 mr-1"></i>
-                                <span>متوسط الإنجاز: </span>
-                                <span id="avgCompletionTime" class="font-bold">0 يوم</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- مخطط بياني -->
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div class="card p-6">
-                        <div class="flex justify-between items-center mb-6">
-                            <h3 class="text-lg font-bold text-gray-800">توزيع الطلبات</h3>
-                            <select id="chartPeriod" onchange="updateChart()" class="text-sm border border-gray-300 rounded-lg px-3 py-2">
-                                <option value="week">آخر أسبوع</option>
-                                <option value="month" selected>آخر شهر</option>
-                                <option value="quarter">آخر ربع سنة</option>
-                            </select>
-                        </div>
-                        <div class="h-64">
-                            <canvas id="ordersChart"></canvas>
-                        </div>
-                    </div>
-                    
-                    <div class="card p-6">
-                        <div class="flex justify-between items-center mb-6">
-                            <h3 class="text-lg font-bold text-gray-800">حالات الطلبات</h3>
-                            <span class="text-sm text-gray-500" id="statusSummary">0 طلب نشط</span>
-                        </div>
-                        <div class="h-64">
-                            <canvas id="statusChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- طلبات تحتاج إجراء -->
-                <div class="card p-6">
-                    <div class="flex justify-between items-center mb-6">
-                        <h3 class="text-lg font-bold text-gray-800">طلبات تحتاج إجراء فوري</h3>
-                        <span class="text-sm bg-red-100 text-red-700 px-3 py-1 rounded-full font-bold" id="urgentCount">0 عاجل</span>
-                    </div>
-                    <div id="urgentOrders" class="space-y-3">
-                        <!-- سيتم ملؤها ديناميكياً -->
-                        <div class="text-center py-8 text-gray-400">
-                            <i class="bi bi-check2-circle text-3xl mb-2"></i>
-                            <p>لا توجد طلبات عاجلة</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- تبويب الطلبات -->
-            <div id="ordersTab" class="hidden space-y-6">
-                <!-- فلترات متقدمة -->
-                <div class="card p-6">
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-2">نوع الطلب</label>
-                            <select id="filterType" onchange="filterOrders()" class="w-full p-3 border border-gray-300 rounded-lg">
-                                <option value="all">جميع الأنواع</option>
-                                <option value="فوري">فوري</option>
-                                <option value="خارجي">خارجي</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-2">الحالة</label>
-                            <select id="filterStatus" onchange="filterOrders()" class="w-full p-3 border border-gray-300 rounded-lg">
-                                <option value="all">جميع الحالات</option>
-                                <option value="pending">بانتظار</option>
-                                <option value="in-progress">قيد التنفيذ</option>
-                                <option value="completed">مكتملة</option>
-                                <option value="returned">مرتجعة</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-2">التاريخ من</label>
-                            <input type="date" id="filterDateFrom" onchange="filterOrders()" class="w-full p-3 border border-gray-300 rounded-lg">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-2">التاريخ إلى</label>
-                            <input type="date" id="filterDateTo" onchange="filterOrders()" class="w-full p-3 border border-gray-300 rounded-lg">
-                        </div>
-                    </div>
-                    
-                    <div class="mt-4">
-                        <div class="relative">
-                            <input type="text" id="searchInput" oninput="filterOrders()" 
-                                   placeholder="ابحث عن مادة، باركود، أو رقم طلب..." 
-                                   class="w-full p-4 pr-12 bg-gray-50 border border-gray-300 rounded-xl shadow-sm outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                            <i class="bi bi-search absolute right-4 top-4 text-gray-400"></i>
-                        </div>
-                    </div>
-                    
-                    <!-- تبيويبات سريعة -->
-                    <div class="flex gap-2 mt-4 overflow-x-auto pb-2">
-                        <button onclick="quickFilter('urgent')" class="px-4 py-2 bg-red-50 text-red-700 border border-red-200 rounded-lg text-sm font-bold hover:bg-red-100 transition-colors">
-                            <i class="bi bi-exclamation-triangle mr-1"></i>عاجلة
-                        </button>
-                        <button onclick="quickFilter('today')" class="px-4 py-2 bg-blue-50 text-blue-700 border border-blue-200 rounded-lg text-sm font-bold hover:bg-blue-100 transition-colors">
-                            <i class="bi bi-calendar-day mr-1"></i>اليوم
-                        </button>
-                        <button onclick="quickFilter('my')" class="px-4 py-2 bg-green-50 text-green-700 border border-green-200 rounded-lg text-sm font-bold hover:bg-green-100 transition-colors">
-                            <i class="bi bi-person mr-1"></i>طلباتي
-                        </button>
-                        <button onclick="quickFilter('overdue')" class="px-4 py-2 bg-orange-50 text-orange-700 border border-orange-200 rounded-lg text-sm font-bold hover:bg-orange-100 transition-colors">
-                            <i class="bi bi-clock-history mr-1"></i>متأخرة
-                        </button>
-                        <button onclick="quickFilter('all')" class="px-4 py-2 bg-gray-100 text-gray-700 border border-gray-300 rounded-lg text-sm font-bold hover:bg-gray-200 transition-colors">
-                            <i class="bi bi-list-ul mr-1"></i>عرض الكل
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- حاوية الطلبات -->
-                <div id="ordersContainer" class="space-y-4">
-                    <!-- سيتم ملؤها ديناميكياً -->
-                </div>
-                
-                <!-- ترقيم الصفحات -->
-                <div id="pagination" class="flex justify-center items-center gap-2 mt-8 hidden">
-                    <button onclick="changePage('prev')" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">
-                        <i class="bi bi-chevron-right"></i> السابق
-                    </button>
-                    <span id="pageInfo" class="text-gray-600">الصفحة 1 من 1</span>
-                    <button onclick="changePage('next')" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">
-                        التالي <i class="bi bi-chevron-left"></i>
-                    </button>
-                </div>
-            </div>
-            
-            <!-- تبويب التقارير -->
-            <div id="reportsTab" class="hidden space-y-6">
-                <!-- تقارير سريعة -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <button onclick="generateReport('daily')" class="card p-6 text-center hover:shadow-lg transition-all">
-                        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <i class="bi bi-calendar-day text-blue-600 text-2xl"></i>
-                        </div>
-                        <h4 class="font-bold text-gray-800 mb-2">تقرير يومي</h4>
-                        <p class="text-sm text-gray-600">ملخص الأنشطة اليومية</p>
-                    </button>
-                    
-                    <button onclick="generateReport('weekly')" class="card p-6 text-center hover:shadow-lg transition-all">
-                        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <i class="bi bi-calendar-week text-green-600 text-2xl"></i>
-                        </div>
-                        <h4 class="font-bold text-gray-800 mb-2">تقرير أسبوعي</h4>
-                        <p class="text-sm text-gray-600">تحليل أداء الأسبوع</p>
-                    </button>
-                    
-                    <button onclick="generateReport('monthly')" class="card p-6 text-center hover:shadow-lg transition-all">
-                        <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <i class="bi bi-calendar-month text-purple-600 text-2xl"></i>
-                        </div>
-                        <h4 class="font-bold text-gray-800 mb-2">تقرير شهري</h4>
-                        <p class="text-sm text-gray-600">إحصائيات الأداء الشهري</p>
-                    </button>
-                </div>
-                
-                <!-- تقرير مفصل -->
-                <div class="card p-6">
-                    <h3 class="text-lg font-bold text-gray-800 mb-6">تقرير الأداء التفصيلي</h3>
-                    <div id="reportContent">
-                        <p class="text-gray-500 text-center py-8">حدد نوع التقرير لعرض البيانات</p>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- تبويب دليل المواد -->
-            <div id="catalogTab" class="hidden space-y-6">
-                <!-- بحث في الكتالوج -->
-                <div class="card p-6">
-                    <div class="flex gap-4">
-                        <div class="flex-1 relative">
-                            <input type="text" id="catalogSearch" oninput="searchCatalog()" 
-                                   placeholder="ابحث عن مادة، باركود، أو فئة..." 
-                                   class="w-full p-4 pr-12 bg-gray-50 border border-gray-300 rounded-xl shadow-sm outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                            <i class="bi bi-search absolute right-4 top-4 text-gray-400"></i>
-                        </div>
-                        <button onclick="showCatalogItemModal()" class="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 rounded-xl font-bold hover:shadow-lg transition-all">
-                            <i class="bi bi-plus-lg mr-2"></i>إضافة مادة
-                        </button>
-                    </div>
-                    
-                    <!-- فلترات الكتالوج -->
-                    <div class="flex gap-2 mt-4 overflow-x-auto pb-2">
-                        <button onclick="filterCatalog('all')" class="px-4 py-2 bg-blue-100 text-blue-700 border border-blue-300 rounded-lg text-sm font-bold">
-                            الكل
-                        </button>
-                        <button onclick="filterCatalog('low')" class="px-4 py-2 bg-red-50 text-red-700 border border-red-200 rounded-lg text-sm font-bold hover:bg-red-100">
-                            <i class="bi bi-exclamation-triangle mr-1"></i>منخفض المخزون
-                        </button>
-                        <button onclick="filterCatalog('electronics')" class="px-4 py-2 bg-gray-100 text-gray-700 border border-gray-300 rounded-lg text-sm font-bold hover:bg-gray-200">
-                            إلكترونيات
-                        </button>
-                        <button onclick="filterCatalog('accessories')" class="px-4 py-2 bg-gray-100 text-gray-700 border border-gray-300 rounded-lg text-sm font-bold hover:bg-gray-200">
-                            إكسسوارات
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- جدول الكتالوج -->
-                <div class="card overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="w-full">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th class="p-4 text-right text-sm font-bold text-gray-700">الباركود</th>
-                                    <th class="p-4 text-right text-sm font-bold text-gray-700">اسم المادة</th>
-                                    <th class="p-4 text-right text-sm font-bold text-gray-700">الفئة</th>
-                                    <th class="p-4 text-right text-sm font-bold text-gray-700">المخزون</th>
-                                    <th class="p-4 text-right text-sm font-bold text-gray-700">الحد الأدنى</th>
-                                    <th class="p-4 text-right text-sm font-bold text-gray-700">الحالة</th>
-                                    <th class="p-4 text-right text-sm font-bold text-gray-700">إجراءات</th>
-                                </tr>
-                            </thead>
-                            <tbody id="catalogTable" class="divide-y divide-gray-100">
-                                <!-- سيتم ملؤها ديناميكياً -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- تبويب الإدارة -->
-            <div id="adminTab" class="hidden space-y-6">
-                <!-- لوحة تحكم الإدارة -->
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="lg:col-span-2 card p-6">
-                        <h3 class="text-lg font-bold text-gray-800 mb-6">إحصائيات النظام</h3>
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            <div class="text-center p-4 bg-blue-50 rounded-xl">
-                                <div class="text-2xl font-black text-blue-700" id="adminTotalUsers">0</div>
-                                <div class="text-sm text-blue-600">مستخدمين</div>
-                            </div>
-                            <div class="text-center p-4 bg-green-50 rounded-xl">
-                                <div class="text-2xl font-black text-green-700" id="adminTotalOrders">0</div>
-                                <div class="text-sm text-green-600">طلبات</div>
-                            </div>
-                            <div class="text-center p-4 bg-purple-50 rounded-xl">
-                                <div class="text-2xl font-black text-purple-700" id="adminAvgTime">0</div>
-                                <div class="text-sm text-purple-600">يوم متوسط</div>
-                            </div>
-                            <div class="text-center p-4 bg-orange-50 rounded-xl">
-                                <div class="text-2xl font-black text-orange-700" id="adminEfficiency">0%</div>
-                                <div class="text-sm text-orange-600">كفاءة</div>
-                            </div>
-                        </div>
-                        
-                        <!-- مخطط تقدم شهري -->
-                        <div class="mt-8">
-                            <h4 class="font-bold text-gray-700 mb-4">تقدم الطلبات الشهري</h4>
-                            <div class="space-y-3">
-                                <div>
-                                    <div class="flex justify-between text-sm mb-1">
-                                        <span class="font-medium">مكتملة</span>
-                                        <span id="monthlyCompleted">0%</span>
-                                    </div>
-                                    <div class="w-full bg-gray-200 rounded-full h-2">
-                                        <div class="bg-green-500 h-2 rounded-full" id="completedProgress"></div>
-                                    </div>
-                                </div>
-                                <div>
-                                    <div class="flex justify-between text-sm mb-1">
-                                        <span class="font-medium">قيد التنفيذ</span>
-                                        <span id="monthlyInProgress">0%</span>
-                                    </div>
-                                    <div class="w-full bg-gray-200 rounded-full h-2">
-                                        <div class="bg-blue-500 h-2 rounded-full" id="inProgressProgress"></div>
-                                    </div>
-                                </div>
-                                <div>
-                                    <div class="flex justify-between text-sm mb-1">
-                                        <span class="font-medium">متأخرة</span>
-                                        <span id="monthlyOverdue">0%</span>
-                                    </div>
-                                    <div class="w-full bg-gray-200 rounded-full h-2">
-                                        <div class="bg-red-500 h-2 rounded-full" id="overdueProgress"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="card p-6">
-                        <h3 class="text-lg font-bold text-gray-800 mb-6">إجراءات سريعة</h3>
-                        <div class="space-y-3">
-                            <button onclick="adminAction('backup')" class="w-full p-3 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg text-right flex items-center justify-between transition-colors">
-                                <span>نسخ احتياطي</span>
-                                <i class="bi bi-download"></i>
-                            </button>
-                            <button onclick="adminAction('cleanup')" class="w-full p-3 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg text-right flex items-center justify-between transition-colors">
-                                <span>تنظيف البيانات</span>
-                                <i class="bi bi-trash"></i>
-                            </button>
-                            <button onclick="adminAction('users')" class="w-full p-3 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg text-right flex items-center justify-between transition-colors">
-                                <span>إدارة المستخدمين</span>
-                                <i class="bi bi-people"></i>
-                            </button>
-                            <button onclick="adminAction('settings')" class="w-full p-3 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg text-right flex items-center justify-between transition-colors">
-                                <span>إعدادات النظام</span>
-                                <i class="bi bi-gear"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- سجل النشاط -->
-                <div class="card p-6">
-                    <h3 class="text-lg font-bold text-gray-800 mb-6">سجل النشاط الحديث</h3>
-                    <div id="activityLog" class="space-y-3 max-h-80 overflow-y-auto">
-                        <!-- سيتم ملؤها ديناميكياً -->
-                    </div>
-                </div>
-            </div>
-        </main>
-        
-        <!-- زر الإضافة العائم -->
-        <button id="btnAdd" onclick="showOrderModal()" class="fab-btn hidden">
-            <i class="bi bi-plus-lg"></i>
-        </button>
-        
-        <!-- زر الإشعارات العائم -->
-        <button id="btnNotifications" onclick="showNotifications()" class="fab-btn hidden" style="left: 100px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
-            <i class="bi bi-bell"></i>
-        </button>
+    <!-- شاشة عرض التحاضير -->
+    <section id="feed-view" class="hidden">
+      <div class="meta-bar">
+        <div class="filter-pills">
+          <button type="button" class="pill active" data-filter="all">جميع المواد</button>
+          <button type="button" class="pill" data-filter="new">🆕 جديد (آخر 24 ساعة)</button>
+        </div>
+        <div class="updated-at" id="updated-at"></div>
+      </div>
+      <div id="feed-grid" class="grid"></div>
     </section>
+  </main>
 
-    <!-- نافذة إضافة/تعديل طلب -->
-    <div id="orderModal" class="fixed inset-0 bg-black/70 z-[10000] hidden items-center justify-center p-4">
-        <div class="bg-white w-full max-w-2xl rounded-2xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
-            <div class="flex justify-between items-center mb-6 pb-4 border-b">
-                <h3 class="font-bold text-xl text-gray-800" id="modalTitle">طلب مادة جديدة</h3>
-                <button onclick="hideModal('orderModal')" class="text-gray-400 text-2xl hover:text-gray-600 transition">&times;</button>
-            </div>
-            
-            <div class="space-y-4">
-                <!-- معلومات أساسية -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-bold text-gray-700 mb-2">نوع الطلب</label>
-                        <div class="grid grid-cols-2 gap-2">
-                            <label class="cursor-pointer">
-                                <input type="radio" name="reqType" value="فوري" checked class="peer hidden">
-                                <div class="p-3 border-2 border-gray-200 rounded-xl text-center peer-checked:bg-orange-100 peer-checked:border-orange-500 peer-checked:text-orange-700 font-bold transition-all">
-                                    ⚡ فوري
-                                </div>
-                            </label>
-                            <label class="cursor-pointer">
-                                <input type="radio" name="reqType" value="خارجي" class="peer hidden">
-                                <div class="p-3 border-2 border-gray-200 rounded-xl text-center peer-checked:bg-purple-100 peer-checked:border-purple-500 peer-checked:text-purple-700 font-bold transition-all">
-                                    🌍 خارجي
-                                </div>
-                            </label>
-                        </div>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-bold text-gray-700 mb-2">الأولوية</label>
-                        <select id="orderPriority" class="w-full p-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
-                            <option value="عادي">عادي</option>
-                            <option value="متوسط">متوسط</option>
-                            <option value="عالي">عالي</option>
-                            <option value="عاجل">عاجل</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <!-- معلومات المادة -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-bold text-gray-700 mb-2">الباركود (اختياري)</label>
-                        <div class="relative">
-                            <input id="newBar" type="text" placeholder="مسح أو إدخال الباركود" 
-                                   class="w-full p-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none pr-10">
-                            <button onclick="scanBarcode()" class="absolute left-3 top-3 text-gray-400 hover:text-blue-500">
-                                <i class="bi bi-upc-scan text-xl"></i>
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-bold text-gray-700 mb-2">القسم</label>
-                        <select id="orderDepartment" class="w-full p-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
-                            <option value="تقنية المعلومات">تقنية المعلومات</option>
-                            <option value="الدعم الفني">الدعم الفني</option>
-                            <option value="الإدارة">الإدارة</option>
-                            <option value="الموارد البشرية">الموارد البشرية</option>
-                            <option value="المالية">المالية</option>
-                            <option value="أخرى">أخرى</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-2">اسم المادة *</label>
-                    <input id="newItem" type="text" placeholder="اسم المادة المطلوبة" 
-                           class="w-full p-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" required>
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-2">المواصفات والتفاصيل</label>
-                    <textarea id="newSpecs" rows="4" placeholder="أدخل المواصفات والتفاصيل المطلوبة..." 
-                              class="w-full p-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"></textarea>
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-2">المشروع (اختياري)</label>
-                    <input id="orderProject" type="text" placeholder="اسم المشروع أو المهمة" 
-                           class="w-full p-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-2">ملاحظات إضافية</label>
-                    <textarea id="orderNotes" rows="2" placeholder="ملاحظات إضافية..." 
-                              class="w-full p-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"></textarea>
-                </div>
-                
-                <div class="pt-4 border-t">
-                    <button onclick="submitOrder()" class="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold py-4 rounded-xl hover:shadow-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-300">
-                        <i class="bi bi-send-check mr-2"></i>إرسال الطلب
-                    </button>
-                </div>
-            </div>
+  <!-- نافذة عرض التفاصيل الكاملة -->
+  <div class="modal-backdrop" id="modal-backdrop">
+    <div class="modal" role="dialog" aria-modal="true">
+      <div class="modal-head">
+        <div>
+          <h3 id="modal-title"></h3>
+          <div id="modal-sub" style="font-size:12.5px;color:#CBD5E1;margin-top:2px"></div>
         </div>
+        <button type="button" class="modal-close" id="modal-close">✕</button>
+      </div>
+      <div class="modal-tabs hidden" id="modal-tabs">
+        <button type="button" class="modal-tab active" data-which="latest">📌 التحضير الأحدث</button>
+        <button type="button" class="modal-tab" data-which="previous">↩️ التحضير السابق</button>
+      </div>
+      <div class="modal-body" id="modal-body"></div>
     </div>
+  </div>
 
-    <!-- نافذة تفاصيل الطلب -->
-    <div id="orderDetailsModal" class="fixed inset-0 bg-black/70 z-[10000] hidden items-center justify-center p-4">
-        <div class="bg-white w-full max-w-3xl rounded-2xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
-            <!-- سيتم ملؤها ديناميكياً -->
+<script>
+  // =================================================================
+  // إعدادات الربط
+  // =================================================================
+  const CONFIG = {
+    GAS_URL: 'https://script.google.com/macros/s/AKfycbzZPqtdS9kJSe-cTBiISAHN6m-8B6UO3vdFvWQGi7sx81zlwZmuzcUrO29zd5D5Rw3bLQ/exec',
+    ONESIGNAL_APP_ID: '649b3d75-0371-4630-8294-0cbd915c454b'
+  };
+
+  const ACCENTS = ['#1D4ED8', '#0F766E', '#7C3AED', '#B45309', '#BE123C', '#0369A1', '#047857', '#A21CAF'];
+  const STORE_KEY = 'riyahi_student_pref_v1';
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  function normId(v) { return String(v || '').trim().toUpperCase(); }
+  function normDiv(v) {
+    let s = String(v || '').trim().replace(/^شعبة\s+/u, '').trim();
+    return s.replace(/^[اأإآ]$/u, 'أ').replace(/^(هـ|ه|ة)$/u, 'هـ');
+  }
+  function stripHtml(html) {
+    const tmp = document.createElement('div');
+    tmp.innerHTML = String(html || '');
+    return (tmp.textContent || tmp.innerText || '').trim();
+  }
+
+  async function apiPost(payload) {
+    const res = await fetch(CONFIG.GAS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    });
+    return res.json();
+  }
+
+  // =================================================================
+  // OneSignal Push (إشعارات والشاشة مغلقة)
+  // =================================================================
+  let oneSignalReady = false;
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  if (CONFIG.ONESIGNAL_APP_ID && !CONFIG.ONESIGNAL_APP_ID.startsWith('PUT_')) {
+    OneSignalDeferred.push(async function(OneSignal) {
+      await OneSignal.init({
+        appId: CONFIG.ONESIGNAL_APP_ID,
+        allowLocalhostAsSecureOrigin: true
+      });
+      oneSignalReady = true;
+      updateNotifyBtn(OneSignal.Notifications.permission);
+      OneSignal.Notifications.addEventListener('permissionChange', granted => {
+        updateNotifyBtn(granted);
+        if (granted) syncStudentTags();
+      });
+      if (OneSignal.Notifications.permission) syncStudentTags();
+    });
+  }
+
+  function updateNotifyBtn(granted) {
+    const btn = $('btn-notify');
+    if (granted) {
+      btn.textContent = '🔔 الإشعارات مفعّلة';
+      btn.classList.remove('notify-off');
+      btn.classList.add('notify-on');
+    } else {
+      btn.textContent = '🔔 تفعيل الإشعارات';
+      btn.classList.remove('notify-on');
+      btn.classList.add('notify-off');
+    }
+  }
+
+  function syncStudentTags() {
+    const pref = getPref();
+    if (!oneSignalReady || !pref) return;
+    OneSignalDeferred.push(async function(OneSignal) {
+      if (!OneSignal.Notifications.permission) return;
+      await OneSignal.User.addTags({
+        role: 'student',
+        class_id: normId(pref.classId),
+        class_div: normId(pref.classId) + '_' + normDiv(pref.division)
+      });
+    });
+  }
+
+  function requestNotifications() {
+    if (!oneSignalReady) {
+      showMsg('لم يتم ربط خدمة الإشعارات بعد، أو أن المتصفح لا يدعم الإشعارات (على الآيفون: أضف الموقع للشاشة الرئيسية أولاً).', 'info');
+      return;
+    }
+    OneSignalDeferred.push(async function(OneSignal) {
+      await OneSignal.Notifications.requestPermission();
+      if (OneSignal.Notifications.permission) {
+        await syncStudentTags();
+        showMsg('تم تفعيل الإشعارات لشعبتك بنجاح! ستصلك التنبيهات فوراً حتى والشاشة مغلقة.', 'info');
+        setTimeout(hideMsg, 4500);
+      }
+    });
+  }
+
+  // =================================================================
+  // حالة التطبيق
+  // =================================================================
+  const State = {
+    classes: [],
+    selectedClass: null,
+    selectedDiv: null,
+    items: [],
+    filter: 'all',
+    activeModalItem: null
+  };
+
+  function getPref() {
+    try { return JSON.parse(localStorage.getItem(STORE_KEY) || 'null'); } catch (e) { return null; }
+  }
+  function savePref(pref) {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(pref)); } catch (e) {}
+  }
+  function showMsg(text, type) {
+    const el = $('global-msg');
+    el.textContent = text;
+    el.className = 'status-msg ' + (type || 'info');
+    el.classList.remove('hidden');
+  }
+  function hideMsg() { $('global-msg').classList.add('hidden'); }
+
+  async function init() {
+    if (!CONFIG.GAS_URL || CONFIG.GAS_URL.startsWith('PUT_')) {
+      showMsg('تنبيه للمدير: يرجى وضع رابط Google Apps Script في متغير CONFIG داخل ملف index.html.', 'error');
+      return;
+    }
+
+    $('btn-notify').addEventListener('click', requestNotifications);
+    $('btn-refresh').addEventListener('click', () => loadFeed());
+    $('btn-change').addEventListener('click', () => openSetup());
+    $('btn-save-choice').addEventListener('click', confirmSetup);
+    $('modal-close').addEventListener('click', closeModal);
+    $('modal-backdrop').addEventListener('click', e => { if (e.target === $('modal-backdrop')) closeModal(); });
+    $('modal-tabs').addEventListener('click', e => {
+      const btn = e.target.closest('.modal-tab');
+      if (btn) renderModalContent(btn.dataset.which);
+    });
+    document.querySelectorAll('.pill').forEach(p => p.addEventListener('click', () => {
+      document.querySelectorAll('.pill').forEach(x => x.classList.remove('active'));
+      p.classList.add('active');
+      State.filter = p.dataset.filter;
+      renderFeed();
+    }));
+
+    const pref = getPref();
+    if (pref && pref.classId && pref.division) {
+      updateHeader(pref.className, pref.division);
+      await loadFeed();
+    } else {
+      await openSetup();
+    }
+  }
+
+  function updateHeader(className, division) {
+    $('header-sub').innerHTML = `<strong>${esc(className)}</strong> • شعبة <strong>${esc(division)}</strong>`;
+    $('header-actions').classList.remove('hidden');
+  }
+
+  async function openSetup() {
+    $('feed-view').classList.add('hidden');
+    $('setup-view').classList.remove('hidden');
+    hideMsg();
+
+    if (!State.classes.length) {
+      $('class-chips').innerHTML = '<div style="color:#64748B">جاري تحميل الصفوف...</div>';
+      try {
+        const res = await apiPost({ action: 'studentMeta' });
+        if (!res.success) throw new Error(res.message);
+        State.classes = res.classes || [];
+      } catch (e) {
+        showMsg('تعذر الاتصال بالخادم. تأكد من الإنترنت وحاول مرة أخرى.', 'error');
+        return;
+      }
+    }
+
+    const pref = getPref();
+    State.selectedClass = pref ? State.classes.find(c => c.classId === pref.classId) || null : null;
+    State.selectedDiv = pref ? pref.division : null;
+    renderSetupChips();
+  }
+
+  function renderSetupChips() {
+    $('class-chips').innerHTML = State.classes.map(c =>
+      `<button type="button" class="chip-btn ${State.selectedClass && State.selectedClass.classId === c.classId ? 'active' : ''}" data-cid="${esc(c.classId)}">${esc(c.className)}</button>`
+    ).join('');
+
+    $('class-chips').querySelectorAll('.chip-btn').forEach(b => b.addEventListener('click', () => {
+      State.selectedClass = State.classes.find(c => c.classId === b.dataset.cid);
+      State.selectedDiv = null;
+      renderSetupChips();
+    }));
+
+    if (State.selectedClass) {
+      $('div-section').classList.remove('hidden');
+      const divs = State.selectedClass.divisions.length ? State.selectedClass.divisions : ['أ', 'ب', 'ج', 'د', 'هـ'];
+      $('div-chips').innerHTML = divs.map(d =>
+        `<button type="button" class="chip-btn ${State.selectedDiv === d ? 'active' : ''}" data-div="${esc(d)}">شعبة ${esc(d)}</button>`
+      ).join('');
+      $('div-chips').querySelectorAll('.chip-btn').forEach(b => b.addEventListener('click', () => {
+        State.selectedDiv = b.dataset.div;
+        renderSetupChips();
+      }));
+    } else {
+      $('div-section').classList.add('hidden');
+    }
+
+    $('btn-save-choice').disabled = !(State.selectedClass && State.selectedDiv);
+  }
+
+  async function confirmSetup() {
+    if (!State.selectedClass || !State.selectedDiv) return;
+    const pref = {
+      classId: State.selectedClass.classId,
+      className: State.selectedClass.className,
+      division: State.selectedDiv
+    };
+    savePref(pref);
+    syncStudentTags();
+    updateHeader(pref.className, pref.division);
+    await loadFeed();
+  }
+
+  async function loadFeed() {
+    const pref = getPref();
+    if (!pref) return openSetup();
+    hideMsg();
+    $('setup-view').classList.add('hidden');
+    $('feed-view').classList.remove('hidden');
+    $('feed-grid').innerHTML = '<div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>';
+
+    try {
+      const res = await apiPost({ action: 'studentFeed', classId: pref.classId, division: pref.division });
+      if (!res.success) throw new Error(res.message);
+      State.items = res.items || [];
+      $('updated-at').textContent = `آخر تحديث: ${res.updatedAt || ''}`;
+      renderFeed();
+    } catch (e) {
+      $('feed-grid').innerHTML = '';
+      showMsg('تعذر تحميل التحاضير: ' + (e.message || 'خطأ في الاتصال'), 'error');
+    }
+  }
+
+  function renderFeed() {
+    const list = State.filter === 'new' ? State.items.filter(x => x.latest.isNew) : State.items;
+    if (!list.length) {
+      $('feed-grid').innerHTML = `<div class="empty-box" style="grid-column:1/-1">
+        <div style="font-size:34px;margin-bottom:8px">📭</div>
+        <strong>${State.filter === 'new' ? 'لا توجد تحاضير جديدة خلال آخر 24 ساعة.' : 'لا توجد تحاضير منشورة لهذه الشعبة بعد.'}</strong>
+      </div>`;
+      return;
+    }
+
+    $('feed-grid').innerHTML = list.map((item, idx) => {
+      const cur = item.latest;
+      const prev = item.previous;
+      const accent = ACCENTS[idx % ACCENTS.length];
+      const preview = stripHtml(cur.nextLesson || cur.prevLesson);
+
+      return `<article class="subject-card" style="--accent:${accent}">
+        <div class="card-top">
+          <div class="subject-name">
+            <span>📖 ${esc(item.subject)}</span>
+            ${cur.isNew ? '<span class="badge-new">جديد</span>' : ''}
+          </div>
+          <div class="card-time">🕒 ${esc(cur.timeLabel)}</div>
         </div>
-    </div>
-
-    <!-- نافذة الإشعارات -->
-    <div id="notificationsModal" class="fixed inset-0 bg-black/70 z-[10000] hidden items-center justify-center p-4">
-        <div class="bg-white w-full max-w-md rounded-2xl p-6 shadow-2xl">
-            <div class="flex justify-between items-center mb-6 pb-4 border-b">
-                <h3 class="font-bold text-xl text-gray-800">الإشعارات</h3>
-                <button onclick="hideModal('notificationsModal')" class="text-gray-400 text-2xl hover:text-gray-600 transition">&times;</button>
-            </div>
-            <div id="notificationsList" class="space-y-3">
-                <!-- سيتم ملؤها ديناميكياً -->
-            </div>
+        <div class="teacher-line">👨‍🏫 ${esc(cur.teacher)}</div>
+        ${cur.topic ? `<div class="topic-title">🔖 ${esc(cur.topic)}</div>` : ''}
+        <div class="pages-row">
+          <div class="page-box"><span>🔙 المشروح سابقاً</span><strong>${esc(cur.prevPages || '—')}</strong></div>
+          <div class="page-box"><span>🔜 القادم (ص)</span><strong>${esc(cur.nextPages || '—')}</strong></div>
         </div>
-    </div>
+        ${preview ? `<div class="preview-text">${esc(preview)}</div>` : ''}
+        ${prev ? `<div class="prev-hint">↩️ السابق: ${esc(prev.topic || prev.nextPages || prev.timeLabel)}</div>` : ''}
+        <div class="card-actions">
+          <button type="button" class="btn-details" data-open="${esc(item.subject)}" data-which="latest">📖 عرض التفاصيل الكاملة</button>
+          ${prev ? `<button type="button" class="btn-prev" data-open="${esc(item.subject)}" data-which="previous">↩️ السابق</button>` : ''}
+        </div>
+      </article>`;
+    }).join('');
 
-    <script>
-        // ===== الإعدادات الرئيسية =====
-        const API_URL = "https://script.google.com/macros/s/AKfycbzofhoBjot8AyDq88tM21F956m071pndfL7L9y5ixnhKM5oZepsdXRoYNER-MzS-c7I/exec";
-        
-        // حالة التطبيق
-        let currentUser = null;
-        let ordersData = [];
-        let catalogData = [];
-        let statsData = {};
-        let notifications = [];
-        let currentTab = 'dashboard';
-        let filteredOrders = [];
-        let currentPage = 1;
-        const pageSize = 10;
-        
-        // متغيرات الرسوم البيانية
-        let ordersChart = null;
-        let statusChart = null;
-        
-        // ===== أدوات مساعدة =====
-        const show = id => document.getElementById(id)?.classList.remove('hidden');
-        const hide = id => document.getElementById(id)?.classList.add('hidden');
-        const showModal = id => {
-            const el = document.getElementById(id);
-            if (el) {
-                el.classList.remove('hidden');
-                el.style.display = 'flex';
-            }
-        };
-        const hideModal = id => {
-            const el = document.getElementById(id);
-            if (el) {
-                el.classList.add('hidden');
-                el.style.display = 'none';
-            }
-        };
-        
-        const loading = (state, text = 'جاري التحميل...') => {
-            const loader = document.getElementById('loader');
-            const loadingText = document.getElementById('loadingText');
-            const loadingBar = document.getElementById('loadingBar');
-            
-            if (state) {
-                if (loadingText) loadingText.textContent = text;
-                if (loadingBar) loadingBar.style.width = '0%';
-                show('loader');
-                
-                // محاكاة تقدم الشريط
-                let progress = 0;
-                const interval = setInterval(() => {
-                    progress += Math.random() * 10;
-                    if (loadingBar) {
-                        loadingBar.style.width = `${Math.min(progress, 90)}%`;
-                    }
-                    if (progress >= 100) clearInterval(interval);
-                }, 200);
-                
-            } else {
-                if (loadingBar) loadingBar.style.width = '100%';
-                setTimeout(() => hide('loader'), 300);
-            }
-        };
-        
-        // ===== الاتصال بالخادم =====
-        async function api(payload) {
-            loading(true, 'جاري الاتصال بالخادم...');
-            try {
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    body: JSON.stringify(payload)
-                });
-                const result = await response.json();
-                loading(false);
-                return result;
-            } catch (error) {
-                loading(false);
-                Swal.fire('خطأ اتصال', 'يرجى التحقق من الإنترنت', 'error');
-                console.error('API Error:', error);
-                return null;
-            }
-        }
-        
-        // ===== تسجيل الدخول =====
-        async function doLogin() {
-            const username = document.getElementById('loginId').value.trim();
-            const password = document.getElementById('loginPass').value.trim();
-            
-            if (!username || !password) {
-                Swal.fire('خطأ', 'الرجاء إدخال جميع البيانات', 'warning');
-                return;
-            }
-            
-            const result = await api({ action: "LOGIN", username, password });
-            
-            if (result?.status === "success") {
-                currentUser = result.user;
-                await initApp();
-                Swal.fire('مرحباً!', `تم تسجيل الدخول بنجاح كـ ${currentUser.role}`, 'success');
-            } else {
-                Swal.fire('فشل الدخول', result?.message || 'بيانات الدخول غير صحيحة', 'error');
-            }
-        }
-        
-        // ===== تهيئة التطبيق =====
-        async function initApp() {
-            hide('loginScreen');
-            show('appScreen');
-            
-            // تحديث معلومات المستخدم
-            document.getElementById('userName').textContent = currentUser.name || 'مستخدم';
-            document.getElementById('userRole').textContent = currentUser.role || 'مستخدم';
-            document.getElementById('userDept').textContent = currentUser.department ? `(${currentUser.department})` : '';
-            
-            // إظهار/إخفاء العناصر حسب الصلاحية
-            updatePermissions();
-            
-            // تحميل البيانات الأولية
-            await loadInitialData();
-            
-            // تهيئة الرسوم البيانية
-            initCharts();
-            
-            // إظهار لوحة التحكم أولاً
-            switchTab('dashboard');
-        }
-        
-        // ===== تحديث الصلاحيات =====
-        function updatePermissions() {
-            const isAdmin = currentUser.role?.includes('إدارة');
-            const isTechnician = currentUser.role?.includes('فني');
-            const isPurchasing = currentUser.role?.includes('مشتريات');
-            const isStore = currentUser.role?.includes('مخزن');
-            
-            // زر الإضافة
-            if (isTechnician || isAdmin) {
-                show('btnAdd');
-            } else {
-                hide('btnAdd');
-            }
-            
-            // زر Excel
-            if (isAdmin) {
-                show('btnExcel');
-                show('btnNotifications');
-            } else {
-                hide('btnExcel');
-                hide('btnNotifications');
-            }
-            
-            // تبويب الإدارة
-            const adminTab = document.querySelector('button[onclick*="admin"]');
-            if (adminTab) {
-                if (isAdmin) {
-                    adminTab.classList.remove('hidden');
-                } else {
-                    adminTab.classList.add('hidden');
-                }
-            }
-        }
-        
-        // ===== تحميل البيانات الأولية =====
-        async function loadInitialData() {
-            loading(true, 'جاري تحميل البيانات...');
-            
-            try {
-                // تحميل الطلبات والإحصائيات
-                const dataResult = await api({ action: "GET_DATA" });
-                
-                if (dataResult?.status === "success") {
-                    ordersData = dataResult.orders || [];
-                    catalogData = dataResult.catalog || [];
-                    statsData = dataResult.stats || {};
-                    
-                    // تحديث واجهة المستخدم
-                    updateDashboardStats();
-                    renderOrders(ordersData);
-                    renderCatalogTable(catalogData);
-                    
-                    // تحميل تقرير إضافي للإدارة
-                    if (currentUser.role?.includes('إدارة')) {
-                        const statsResult = await api({ action: "GET_STATS" });
-                        if (statsResult?.status === "success") {
-                            updateAdminStats(statsResult.stats);
-                        }
-                    }
-                }
-                
-                // تحميل الإشعارات
-                await loadNotifications();
-                
-            } catch (error) {
-                console.error('Error loading data:', error);
-                Swal.fire('خطأ', 'فشل تحميل البيانات', 'error');
-            } finally {
-                loading(false);
-            }
-        }
-        
-        // ===== تحميل البيانات =====
-        async function loadData() {
-            const dataResult = await api({ action: "GET_DATA" });
-            
-            if (dataResult?.status === "success") {
-                ordersData = dataResult.orders || [];
-                catalogData = dataResult.catalog || [];
-                statsData = dataResult.stats || {};
-                
-                // تحديث واجهة المستخدم بناءً على التبويب الحالي
-                switch(currentTab) {
-                    case 'dashboard':
-                        updateDashboardStats();
-                        break;
-                    case 'orders':
-                        renderOrders(ordersData);
-                        break;
-                    case 'catalog':
-                        renderCatalogTable(catalogData);
-                        break;
-                }
-                
-                Swal.fire('تم التحديث', 'تم تحديث البيانات بنجاح', 'success');
-            }
-        }
-        
-        // ===== تحديث إحصائيات لوحة التحكم =====
-        function updateDashboardStats() {
-            if (!statsData.totals) return;
-            
-            const totals = statsData.totals;
-            
-            // تحديث الأرقام الرئيسية
-            document.getElementById('statTotal').textContent = totals.all || 0;
-            document.getElementById('statPendingPurchase').textContent = totals.pendingPurchase || 0;
-            document.getElementById('statInStore').textContent = totals.inStore || 0;
-            document.getElementById('statCompleted').textContent = totals.completed || 0;
-            
-            // تحديث الإحصائيات الإضافية
-            document.getElementById('statTotalChange').textContent = '12%'; // يمكن جلبها من الخادم
-            document.getElementById('statHighPriority').textContent = ordersData.filter(o => o.priority === 'عالي' || o.priority === 'عاجل').length;
-            document.getElementById('avgCompletionTime').textContent = statsData.avgCompletionTime ? `${statsData.avgCompletionTime} يوم` : '0 يوم';
-            
-            // تحديث شريط الأولوية
-            const priorityBar = document.getElementById('priorityBar');
-            if (priorityBar && totals.all > 0) {
-                const highPriorityCount = ordersData.filter(o => o.priority === 'عالي' || o.priority === 'عاجل').length;
-                const percentage = Math.round((highPriorityCount / totals.all) * 100);
-                priorityBar.style.width = `${percentage}%`;
-            }
-            
-            // تحديث الطلبات العاجلة
-            updateUrgentOrders();
-            
-            // تحديث الرسوم البيانية
-            updateCharts();
-        }
-        
-        // ===== تحديث إحصائيات الإدارة =====
-        function updateAdminStats(stats) {
-            if (!stats) return;
-            
-            document.getElementById('adminTotalUsers').textContent = '4'; // ثابت حالياً
-            document.getElementById('adminTotalOrders').textContent = stats.totals?.all || 0;
-            document.getElementById('adminAvgTime').textContent = stats.avgCompletionTime || 0;
-            document.getElementById('adminEfficiency').textContent = stats.efficiency ? `${stats.efficiency}%` : '0%';
-            
-            // تحديث أشرطة التقدم
-            if (stats.totals?.all > 0) {
-                const completedPercent = Math.round((stats.totals.completed / stats.totals.all) * 100);
-                const inProgressPercent = Math.round(((stats.totals.pendingPurchase + stats.totals.inStore) / stats.totals.all) * 100);
-                const overduePercent = Math.round((ordersData.filter(o => {
-                    if (!o.date) return false;
-                    const orderDate = new Date(o.date);
-                    const daysDiff = Math.floor((new Date() - orderDate) / (1000 * 60 * 60 * 24));
-                    return daysDiff > 7 && !o.status?.includes('تم');
-                }).length / stats.totals.all) * 100);
-                
-                document.getElementById('monthlyCompleted').textContent = `${completedPercent}%`;
-                document.getElementById('monthlyInProgress').textContent = `${inProgressPercent}%`;
-                document.getElementById('monthlyOverdue').textContent = `${overduePercent}%`;
-                
-                document.getElementById('completedProgress').style.width = `${completedPercent}%`;
-                document.getElementById('inProgressProgress').style.width = `${inProgressPercent}%`;
-                document.getElementById('overdueProgress').style.width = `${overduePercent}%`;
-            }
-            
-            // تحديث سجل النشاط
-            updateActivityLog();
-        }
-        
-        // ===== تحديث الطلبات العاجلة =====
-        function updateUrgentOrders() {
-            const urgentContainer = document.getElementById('urgentOrders');
-            const urgentCount = document.getElementById('urgentCount');
-            
-            if (!urgentContainer) return;
-            
-            // فلتر الطلبات العاجلة
-            const urgentOrders = ordersData.filter(order => {
-                const isUrgent = order.priority === 'عاجل' || 
-                                (order.priority === 'عالي' && order.status?.includes('بانتظار'));
-                const isOld = order.date ? (new Date() - new Date(order.date)) > (7 * 24 * 60 * 60 * 1000) : false;
-                return isUrgent || isOld;
-            }).slice(0, 5);
-            
-            if (urgentOrders.length === 0) {
-                urgentContainer.innerHTML = `
-                    <div class="text-center py-8 text-gray-400">
-                        <i class="bi bi-check2-circle text-3xl mb-2"></i>
-                        <p>لا توجد طلبات عاجلة</p>
-                    </div>
-                `;
-                if (urgentCount) urgentCount.textContent = '0 عاجل';
-                return;
-            }
-            
-            let html = '';
-            urgentOrders.forEach(order => {
-                const daysOld = order.date ? Math.floor((new Date() - new Date(order.date)) / (1000 * 60 * 60 * 24)) : 0;
-                const isOverdue = daysOld > 7;
-                
-                html += `
-                <div class="flex items-center justify-between p-3 bg-gradient-to-r ${isOverdue ? 'from-red-50 to-red-100' : 'from-orange-50 to-orange-100'} rounded-xl border ${isOverdue ? 'border-red-200' : 'border-orange-200'}">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 ${isOverdue ? 'bg-red-100' : 'bg-orange-100'} rounded-lg flex items-center justify-center">
-                            <i class="bi ${isOverdue ? 'bi-exclamation-triangle text-red-600' : 'bi-clock text-orange-600'}"></i>
-                        </div>
-                        <div>
-                            <h4 class="font-bold text-gray-800">${order.item || 'غير معروف'}</h4>
-                            <p class="text-xs text-gray-600">${order.requester || ''} • ${order.date ? new Date(order.date).toLocaleDateString('ar-SA') : ''}</p>
-                        </div>
-                    </div>
-                    <div class="text-right">
-                        <span class="text-sm font-bold ${isOverdue ? 'text-red-700' : 'text-orange-700'}">
-                            ${isOverdue ? `متأخر ${daysOld} يوم` : 'عاجل'}
-                        </span>
-                        <button onclick="viewOrderDetails('${order.id}')" class="text-xs text-blue-600 hover:text-blue-800 mt-1 block">
-                            عرض التفاصيل →
-                        </button>
-                    </div>
-                </div>
-                `;
-            });
-            
-            urgentContainer.innerHTML = html;
-            if (urgentCount) urgentCount.textContent = `${urgentOrders.length} عاجل`;
-        }
-        
-        // ===== تهيئة الرسوم البيانية =====
-        function initCharts() {
-            const ordersCtx = document.getElementById('ordersChart');
-            const statusCtx = document.getElementById('statusChart');
-            
-            if (ordersCtx) {
-                ordersChart = new Chart(ordersCtx, {
-                    type: 'line',
-                    data: {
-                        labels: ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'],
-                        datasets: [{
-                            label: 'طلبات جديدة',
-                            data: [12, 19, 8, 15, 22, 18, 14],
-                            borderColor: '#3b82f6',
-                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                            borderWidth: 2,
-                            tension: 0.4,
-                            fill: true
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { display: false }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                grid: { color: 'rgba(0,0,0,0.05)' }
-                            },
-                            x: {
-                                grid: { display: false }
-                            }
-                        }
-                    }
-                });
-            }
-            
-            if (statusCtx) {
-                statusChart = new Chart(statusCtx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['مكتملة', 'قيد التنفيذ', 'بانتظار', 'مرتجعة'],
-                        datasets: [{
-                            data: [35, 25, 30, 10],
-                            backgroundColor: [
-                                '#10b981',
-                                '#3b82f6',
-                                '#f59e0b',
-                                '#ef4444'
-                            ],
-                            borderWidth: 0,
-                            hoverOffset: 10
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        cutout: '70%',
-                        plugins: {
-                            legend: { position: 'bottom' }
-                        }
-                    }
-                });
-            }
-        }
-        
-        // ===== تحديث الرسوم البيانية =====
-        function updateCharts() {
-            if (!ordersChart || !statusChart) return;
-            
-            // تحديث مخطط الطلبات (بيانات وهمية للتوضيح)
-            const recentOrders = ordersData.slice(0, 7);
-            const dailyCounts = [0, 0, 0, 0, 0, 0, 0];
-            
-            recentOrders.forEach(order => {
-                if (order.date) {
-                    const day = new Date(order.date).getDay();
-                    if (day >= 0 && day < 7) dailyCounts[day]++;
-                }
-            });
-            
-            ordersChart.data.datasets[0].data = dailyCounts;
-            ordersChart.update();
-            
-            // تحديث مخطط الحالات
-            const completed = ordersData.filter(o => o.status?.includes('تم الاستلام')).length;
-            const inProgress = ordersData.filter(o => o.status?.includes('مخزن') || o.status?.includes('جاهز')).length;
-            const pending = ordersData.filter(o => o.status?.includes('بانتظار')).length;
-            const returned = ordersData.filter(o => o.status?.includes('مرتجع')).length;
-            
-            statusChart.data.datasets[0].data = [completed, inProgress, pending, returned];
-            statusChart.update();
-            
-            // تحديث ملخص الحالات
-            const statusSummary = document.getElementById('statusSummary');
-            if (statusSummary) {
-                statusSummary.textContent = `${ordersData.length} طلب (${pending} بانتظار)`;
-            }
-        }
-        
-        // ===== عرض الطلبات =====
-        function renderOrders(orders) {
-            const container = document.getElementById('ordersContainer');
-            if (!container) return;
-            
-            filteredOrders = [...orders];
-            currentPage = 1;
-            
-            if (filteredOrders.length === 0) {
-                container.innerHTML = `
-                    <div class="text-center py-12">
-                        <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <i class="bi bi-inbox text-3xl text-gray-400"></i>
-                        </div>
-                        <h3 class="text-lg font-bold text-gray-700 mb-2">لا توجد طلبات</h3>
-                        <p class="text-gray-500">لم يتم العثور على طلبات تطابق معايير البحث</p>
-                    </div>
-                `;
-                hide('pagination');
-                return;
-            }
-            
-            // ترتيب الطلبات (الأحدث أولاً)
-            filteredOrders.sort((a, b) => {
-                const dateA = a.date ? new Date(a.date) : new Date(0);
-                const dateB = b.date ? new Date(b.date) : new Date(0);
-                return dateB - dateA;
-            });
-            
-            // عرض الصفحة الحالية
-            renderCurrentPage();
-            
-            // عرض ترقيم الصفحات إذا كان هناك أكثر من صفحة
-            const totalPages = Math.ceil(filteredOrders.length / pageSize);
-            if (totalPages > 1) {
-                show('pagination');
-                document.getElementById('pageInfo').textContent = `الصفحة ${currentPage} من ${totalPages}`;
-            } else {
-                hide('pagination');
-            }
-        }
-        
-        // ===== عرض الصفحة الحالية =====
-        function renderCurrentPage() {
-            const container = document.getElementById('ordersContainer');
-            const startIndex = (currentPage - 1) * pageSize;
-            const endIndex = startIndex + pageSize;
-            const pageOrders = filteredOrders.slice(startIndex, endIndex);
-            
-            let html = '';
-            
-            pageOrders.forEach(order => {
-                // تحديد لون الحالة
-                let statusClass = 'status-pending';
-                if (order.status?.includes('مخزن') || order.status?.includes('جاهز')) statusClass = 'status-in-progress';
-                if (order.status?.includes('تم الاستلام')) statusClass = 'status-completed';
-                if (order.status?.includes('مرتجع')) statusClass = 'status-returned';
-                if (order.status?.includes('ملغي')) statusClass = 'status-cancelled';
-                
-                // تحديد أيقونة النوع
-                let typeIcon = order.type === 'فوري' ? '⚡' : '🌍';
-                let typeClass = order.type === 'فوري' ? 'bg-orange-100 text-orange-700' : 'bg-purple-100 text-purple-700';
-                
-                // تحديد أيقونة الأولوية
-                let priorityIcon = '⬜';
-                let priorityColor = 'text-gray-400';
-                if (order.priority === 'عالي') {
-                    priorityIcon = '🔼';
-                    priorityColor = 'text-orange-500';
-                } else if (order.priority === 'عاجل') {
-                    priorityIcon = '🚨';
-                    priorityColor = 'text-red-500';
-                }
-                
-                // تحديد أيام العمر
-                const daysOld = order.date ? Math.floor((new Date() - new Date(order.date)) / (1000 * 60 * 60 * 24)) : 0;
-                const isOverdue = daysOld > 7 && !order.status?.includes('تم');
-                
-                html += `
-                <div class="card overflow-hidden animate-slide-in">
-                    <div class="p-5">
-                        <div class="flex justify-between items-start mb-4">
-                            <div class="flex items-center gap-3">
-                                <div class="w-12 h-12 rounded-xl ${typeClass} flex items-center justify-center text-lg font-bold">
-                                    ${typeIcon}
-                                </div>
-                                <div>
-                                    <h3 class="font-bold text-gray-800 text-lg">${order.item || 'غير معروف'}</h3>
-                                    <div class="flex items-center gap-2 mt-1">
-                                        <span class="text-xs px-2 py-1 rounded-full ${statusClass} font-bold">
-                                            ${order.status || 'غير محدد'}
-                                        </span>
-                                        <span class="text-xs text-gray-500">
-                                            ${order.requester || ''} • ${order.date ? new Date(order.date).toLocaleDateString('ar-SA') : ''}
-                                        </span>
-                                        ${isOverdue ? `<span class="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full">+${daysOld} يوم</span>` : ''}
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="text-left">
-                                <div class="text-xs text-gray-500 mb-1">#${order.id || 'N/A'}</div>
-                                <div class="text-lg ${priorityColor}">${priorityIcon}</div>
-                            </div>
-                        </div>
-                        
-                        <p class="text-gray-600 mb-4 text-sm">${order.specs || 'لا توجد مواصفات'}</p>
-                        
-                        <div class="flex justify-between items-center pt-4 border-t border-gray-100">
-                            <div class="text-xs text-gray-500">
-                                <i class="bi bi-upc-scan mr-1"></i>
-                                ${order.barcode || 'لا يوجد باركود'}
-                            </div>
-                            <div class="flex gap-2">
-                                <button onclick="viewOrderDetails('${order.id}')" 
-                                        class="px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-sm font-bold transition-colors">
-                                    <i class="bi bi-eye mr-1"></i>عرض
-                                </button>
-                                ${renderOrderActions(order)}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                `;
-            });
-            
-            container.innerHTML = html;
-        }
-        
-        // ===== عرض إجراءات الطلب =====
-        function renderOrderActions(order) {
-            if (!currentUser) return '';
-            
-            let actions = '';
-            const role = currentUser.role;
-            
-            // المشتريات
-            if (role.includes('مشتريات') || role.includes('إدارة')) {
-                if (order.status?.includes('بانتظار المشتريات')) {
-                    actions += `
-                    <button onclick="updateOrderStatus('${order.id}', 'تم الشراء - بانتظار المخزن')" 
-                            class="px-4 py-2 bg-green-50 hover:bg-green-100 text-green-700 rounded-lg text-sm font-bold transition-colors">
-                        <i class="bi bi-cart-check mr-1"></i>تم الشراء
-                    </button>`;
-                }
-                if (order.status?.includes('بانتظار المخزن')) {
-                    actions += `
-                    <button onclick="showCode('${order.id}')" 
-                            class="px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-sm font-bold transition-colors">
-                        <i class="bi bi-key mr-1"></i>كود المخزن
-                    </button>`;
-                }
-            }
-            
-            // المخزن
-            if (role.includes('مخزن') || role.includes('إدارة')) {
-                if (order.status?.includes('بانتظار المخزن')) {
-                    actions += `
-                    <button onclick="verifyCodeModal('${order.id}', 'storeCode', 'في المخزن - جاهز للتسليم')" 
-                            class="px-4 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-lg text-sm font-bold transition-colors">
-                        <i class="bi bi-box-arrow-in-down mr-1"></i>استلام
-                    </button>`;
-                }
-                if (order.status?.includes('جاهز للتسليم')) {
-                    actions += `
-                    <button onclick="showReturnOptions('${order.id}')" 
-                            class="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-700 rounded-lg text-sm font-bold transition-colors">
-                        <i class="bi bi-arrow-return-left mr-1"></i>إرجاع
-                    </button>
-                    <button onclick="showCode('${order.id}')" 
-                            class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-bold transition-colors">
-                        <i class="bi bi-key-fill mr-1"></i>كود الفني
-                    </button>`;
-                }
-            }
-            
-            // الفني
-            if (role.includes('فني') || role.includes('إدارة')) {
-                if (order.status?.includes('جاهز للتسليم')) {
-                    actions += `
-                    <button onclick="verifyCodeModal('${order.id}', 'techCode', 'تم الاستلام النهائي')" 
-                            class="px-4 py-2 bg-green-50 hover:bg-green-100 text-green-700 rounded-lg text-sm font-bold transition-colors">
-                        <i class="bi bi-check-circle mr-1"></i>استلام
-                    </button>`;
-                }
-            }
-            
-            return actions;
-        }
-        
-        // ===== ترقيم الصفحات =====
-        function changePage(direction) {
-            const totalPages = Math.ceil(filteredOrders.length / pageSize);
-            
-            if (direction === 'next' && currentPage < totalPages) {
-                currentPage++;
-            } else if (direction === 'prev' && currentPage > 1) {
-                currentPage--;
-            }
-            
-            renderCurrentPage();
-            document.getElementById('pageInfo').textContent = `الصفحة ${currentPage} من ${totalPages}`;
-            
-            // التمرير إلى الأعلى
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-        
-        // ===== فلترة الطلبات =====
-        function filterOrders() {
-            const typeFilter = document.getElementById('filterType').value;
-            const statusFilter = document.getElementById('filterStatus').value;
-            const dateFrom = document.getElementById('filterDateFrom').value;
-            const dateTo = document.getElementById('filterDateTo').value;
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            
-            let filtered = ordersData;
-            
-            // فلترة حسب النوع
-            if (typeFilter !== 'all') {
-                filtered = filtered.filter(order => order.type === typeFilter);
-            }
-            
-            // فلترة حسب الحالة
-            if (statusFilter !== 'all') {
-                filtered = filtered.filter(order => {
-                    switch(statusFilter) {
-                        case 'pending':
-                            return order.status?.includes('بانتظار');
-                        case 'in-progress':
-                            return order.status?.includes('مخزن') || order.status?.includes('جاهز');
-                        case 'completed':
-                            return order.status?.includes('تم الاستلام');
-                        case 'returned':
-                            return order.status?.includes('مرتجع');
-                        default:
-                            return true;
-                    }
-                });
-            }
-            
-            // فلترة حسب التاريخ
-            if (dateFrom) {
-                const fromDate = new Date(dateFrom);
-                filtered = filtered.filter(order => {
-                    if (!order.date) return false;
-                    const orderDate = new Date(order.date);
-                    return orderDate >= fromDate;
-                });
-            }
-            
-            if (dateTo) {
-                const toDate = new Date(dateTo);
-                toDate.setHours(23, 59, 59, 999);
-                filtered = filtered.filter(order => {
-                    if (!order.date) return false;
-                    const orderDate = new Date(order.date);
-                    return orderDate <= toDate;
-                });
-            }
-            
-            // فلترة حسب البحث
-            if (searchTerm) {
-                filtered = filtered.filter(order =>
-                    (order.item && order.item.toLowerCase().includes(searchTerm)) ||
-                    (order.barcode && order.barcode.includes(searchTerm)) ||
-                    (order.id && order.id.toLowerCase().includes(searchTerm)) ||
-                    (order.requester && order.requester.toLowerCase().includes(searchTerm))
-                );
-            }
-            
-            renderOrders(filtered);
-        }
-        
-        // ===== الفلتر السريع =====
-        function quickFilter(type) {
-            let filtered = ordersData;
-            
-            switch(type) {
-                case 'urgent':
-                    filtered = ordersData.filter(order => 
-                        order.priority === 'عاجل' || 
-                        (order.priority === 'عالي' && order.status?.includes('بانتظار'))
-                    );
-                    break;
-                case 'today':
-                    const today = new Date().toISOString().split('T')[0];
-                    filtered = ordersData.filter(order => 
-                        order.date && order.date.startsWith(today)
-                    );
-                    break;
-                case 'my':
-                    filtered = ordersData.filter(order => 
-                        order.requester === currentUser.name
-                    );
-                    break;
-                case 'overdue':
-                    filtered = ordersData.filter(order => {
-                        if (!order.date || order.status?.includes('تم')) return false;
-                        const orderDate = new Date(order.date);
-                        const daysDiff = Math.floor((new Date() - orderDate) / (1000 * 60 * 60 * 24));
-                        return daysDiff > 7;
-                    });
-                    break;
-                case 'all':
-                default:
-                    // عرض الكل
-                    break;
-            }
-            
-            renderOrders(filtered);
-        }
-        
-        // ===== تبديل التبويبات =====
-        function switchTab(tabName) {
-            currentTab = tabName;
-            
-            // إخفاء جميع التبويبات
-            ['dashboardTab', 'ordersTab', 'reportsTab', 'catalogTab', 'adminTab'].forEach(tab => {
-                hide(tab);
-            });
-            
-            // إزالة النشط من جميع أزرار التبويب
-            document.querySelectorAll('[id^="tab"]').forEach(btn => {
-                btn.classList.remove('tab-active');
-                btn.classList.add('tab-inactive');
-            });
-            
-            // إظهار التبويب المحدد
-            show(`${tabName}Tab`);
-            
-            // تمييز زر التبويب النشط
-            const activeBtn = document.getElementById(`tab${tabName.charAt(0).toUpperCase() + tabName.slice(1)}`);
-            if (activeBtn) {
-                activeBtn.classList.remove('tab-inactive');
-                activeBtn.classList.add('tab-active');
-            }
-            
-            // تحميل بيانات التبويب إذا لزم الأمر
-            switch(tabName) {
-                case 'dashboard':
-                    updateDashboardStats();
-                    break;
-                case 'orders':
-                    renderOrders(ordersData);
-                    break;
-                case 'catalog':
-                    renderCatalogTable(catalogData);
-                    break;
-                case 'reports':
-                    // يمكن تحميل التقارير هنا
-                    break;
-                case 'admin':
-                    if (currentUser.role?.includes('إدارة')) {
-                        loadAdminData();
-                    }
-                    break;
-            }
-        }
-        
-        // ===== عرض كتالوج المواد =====
-        function renderCatalogTable(catalog) {
-            const container = document.getElementById('catalogTable');
-            if (!container) return;
-            
-            if (catalog.length === 0) {
-                container.innerHTML = `
-                <tr>
-                    <td colspan="7" class="p-8 text-center text-gray-500">
-                        <i class="bi bi-inbox text-3xl mb-2 block"></i>
-                        لا توجد مواد في الكتالوج
-                    </td>
-                </tr>
-                `;
-                return;
-            }
-            
-            let html = '';
-            catalog.forEach(item => {
-                const isLowStock = item.lowStock || (item.available < item.minStock);
-                const stockClass = isLowStock ? 'text-red-600 font-bold' : 'text-green-600';
-                const stockIcon = isLowStock ? 'bi-exclamation-triangle' : 'bi-check-circle';
-                
-                html += `
-                <tr class="hover:bg-gray-50 transition-colors">
-                    <td class="p-4 font-mono text-sm">${item.barcode || 'N/A'}</td>
-                    <td class="p-4">
-                        <div class="font-medium">${item.name || 'غير معروف'}</div>
-                        <div class="text-xs text-gray-500">${item.description || 'لا يوجد وصف'}</div>
-                    </td>
-                    <td class="p-4">
-                        <span class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs">
-                            ${item.category || 'غير مصنف'}
-                        </span>
-                    </td>
-                    <td class="p-4">
-                        <div class="flex items-center gap-2">
-                            <span class="${stockClass}">
-                                <i class="bi ${stockIcon} mr-1"></i>${item.available || 0}
-                            </span>
-                        </div>
-                    </td>
-                    <td class="p-4 text-gray-600">${item.minStock || 0}</td>
-                    <td class="p-4">
-                        ${isLowStock ? 
-                            '<span class="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-bold">منخفض</span>' : 
-                            '<span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs">جيد</span>'}
-                    </td>
-                    <td class="p-4">
-                        <button onclick="editCatalogItem('${item.barcode}')" class="text-blue-600 hover:text-blue-800 mr-2">
-                            <i class="bi bi-pencil"></i>
-                        </button>
-                        <button onclick="deleteCatalogItem('${item.barcode}')" class="text-red-600 hover:text-red-800">
-                            <i class="bi bi-trash"></i>
-                        </button>
-                    </td>
-                </tr>
-                `;
-            });
-            
-            container.innerHTML = html;
-        }
-        
-        // ===== بحث في الكتالوج =====
-        function searchCatalog() {
-            const searchTerm = document.getElementById('catalogSearch').value.toLowerCase();
-            
-            if (!searchTerm) {
-                renderCatalogTable(catalogData);
-                return;
-            }
-            
-            const filtered = catalogData.filter(item =>
-                (item.name && item.name.toLowerCase().includes(searchTerm)) ||
-                (item.barcode && item.barcode.includes(searchTerm)) ||
-                (item.category && item.category.toLowerCase().includes(searchTerm)) ||
-                (item.description && item.description.toLowerCase().includes(searchTerm))
-            );
-            
-            renderCatalogTable(filtered);
-        }
-        
-        // ===== فلترة الكتالوج =====
-        function filterCatalog(type) {
-            let filtered = catalogData;
-            
-            switch(type) {
-                case 'low':
-                    filtered = catalogData.filter(item => item.lowStock || (item.available < item.minStock));
-                    break;
-                case 'electronics':
-                    filtered = catalogData.filter(item => item.category?.includes('إلكترون') || item.category?.includes('شاشة') || item.category?.includes('كمبيوتر'));
-                    break;
-                case 'accessories':
-                    filtered = catalogData.filter(item => item.category?.includes('إكسسوار') || item.category?.includes('ماوس') || item.category?.includes('لوحة'));
-                    break;
-                case 'all':
-                default:
-                    // عرض الكل
-                    break;
-            }
-            
-            renderCatalogTable(filtered);
-        }
-        
-        // ===== إرسال طلب جديد =====
-        async function submitOrder() {
-            const item = document.getElementById('newItem').value.trim();
-            if (!item) {
-                Swal.fire('خطأ', 'اسم المادة مطلوب', 'warning');
-                return;
-            }
-            
-            const orderData = {
-                action: "CREATE_ORDER",
-                user: currentUser.name,
-                type: document.querySelector('input[name="reqType"]:checked').value,
-                barcode: document.getElementById('newBar').value.trim(),
-                item: item,
-                specs: document.getElementById('newSpecs').value.trim(),
-                department: document.getElementById('orderDepartment').value,
-                priority: document.getElementById('orderPriority').value,
-                project: document.getElementById('orderProject').value.trim(),
-                notes: document.getElementById('orderNotes').value.trim(),
-                note: "طلب جديد من النظام المحسن"
-            };
-            
-            const result = await api(orderData);
-            
-            if (result?.status === "success") {
-                hideModal('orderModal');
-                clearOrderForm();
-                
-                // إعادة تحميل البيانات
-                await loadData();
-                
-                Swal.fire({
-                    title: 'تم بنجاح!',
-                    html: `
-                    <div class="text-center">
-                        <i class="bi bi-check-circle text-4xl text-green-500 mb-4"></i>
-                        <p class="text-lg font-bold mb-2">تم إرسال الطلب بنجاح</p>
-                        <p class="text-gray-600">رقم الطلب: <span class="font-mono font-bold">${result.orderId}</span></p>
-                    </div>
-                    `,
-                    confirmButtonText: 'حسناً'
-                });
-            } else {
-                Swal.fire('خطأ', result?.message || 'فشل في إرسال الطلب', 'error');
-            }
-        }
-        
-        // ===== مسح نموذج الطلب =====
-        function clearOrderForm() {
-            document.getElementById('newBar').value = '';
-            document.getElementById('newItem').value = '';
-            document.getElementById('newSpecs').value = '';
-            document.getElementById('orderProject').value = '';
-            document.getElementById('orderNotes').value = '';
-            document.getElementById('orderPriority').value = 'عادي';
-            document.getElementById('orderDepartment').value = 'تقنية المعلومات';
-        }
-        
-        // ===== عرض نافذة الطلب =====
-        function showOrderModal() {
-            document.getElementById('modalTitle').textContent = 'طلب مادة جديدة';
-            showModal('orderModal');
-        }
-        
-        // ===== تحديث حالة الطلب =====
-        async function updateOrderStatus(orderId, newStatus, note = '') {
-            Swal.fire({
-                title: 'تأكيد الإجراء',
-                text: `هل أنت متأكد من تغيير الحالة إلى "${newStatus}"؟`,
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonText: 'نعم، قم بالتغيير',
-                cancelButtonText: 'إلغاء',
-                confirmButtonColor: '#2563eb',
-                cancelButtonColor: '#6b7280'
-            }).then(async (result) => {
-                if (result.isConfirmed) {
-                    const payload = {
-                        action: "UPDATE_STATUS",
-                        orderId: orderId,
-                        newStatus: newStatus,
-                        user: currentUser.name,
-                        note: note || `تم التحديث بواسطة ${currentUser.name}`
-                    };
-                    
-                    const result = await api(payload);
-                    
-                    if (result?.status === "success") {
-                        if (result.generatedCode) {
-                            await Swal.fire({
-                                title: 'الكود الجديد',
-                                html: `
-                                <div class="text-center">
-                                    <div class="text-5xl font-black text-blue-600 my-4 font-mono">${result.generatedCode}</div>
-                                    <p class="text-gray-600">احفظ هذا الكود لإتمام العملية التالية</p>
-                                </div>
-                                `,
-                                confirmButtonText: 'تم الحفظ'
-                            });
-                        }
-                        
-                        await loadData();
-                        Swal.fire('تم التحديث', 'تم تحديث حالة الطلب بنجاح', 'success');
-                    } else {
-                        Swal.fire('خطأ', result?.message || 'فشل في تحديث الحالة', 'error');
-                    }
-                }
-            });
-        }
-        
-        // ===== نافذة التحقق من الكود =====
-        function verifyCodeModal(orderId, codeType, nextStatus) {
-            Swal.fire({
-                title: 'أدخل الكود',
-                input: 'text',
-                inputPlaceholder: 'أدخل الكود هنا',
-                inputAttributes: {
-                    autocapitalize: 'off',
-                    autocorrect: 'off',
-                    inputmode: 'numeric',
-                    pattern: '[0-9]*',
-                    maxlength: '4'
-                },
-                showCancelButton: true,
-                confirmButtonText: 'تحقق',
-                cancelButtonText: 'إلغاء',
-                preConfirm: async (code) => {
-                    if (!code || code.length !== 4) {
-                        Swal.showValidationMessage('الكود يجب أن يتكون من 4 أرقام');
-                        return false;
-                    }
-                    
-                    const payload = {
-                        action: "UPDATE_STATUS",
-                        orderId: orderId,
-                        newStatus: nextStatus,
-                        user: currentUser.name,
-                        inputCode: code
-                    };
-                    
-                    const result = await api(payload);
-                    
-                    if (result?.status === "success") {
-                        return result;
-                    } else {
-                        Swal.showValidationMessage(result?.message || 'الكود غير صحيح');
-                        return false;
-                    }
-                }
-            }).then(async (result) => {
-                if (result.isConfirmed) {
-                    await loadData();
-                    
-                    if (result.value?.generatedCode) {
-                        await Swal.fire({
-                            title: 'تم التحقق!',
-                            html: `
-                            <div class="text-center">
-                                <i class="bi bi-shield-check text-4xl text-green-500 mb-4"></i>
-                                <p class="text-lg font-bold mb-2">تم التحقق بنجاح</p>
-                                <p class="text-gray-600 mb-4">الكود الجديد للخطوة التالية:</p>
-                                <div class="text-4xl font-black text-blue-600 my-4 font-mono">${result.value.generatedCode}</div>
-                            </div>
-                            `,
-                            confirmButtonText: 'حسناً'
-                        });
-                    } else {
-                        Swal.fire('تم بنجاح', 'تم إتمام العملية بنجاح', 'success');
-                    }
-                }
-            });
-        }
-        
-        // ===== عرض خيارات الإرجاع =====
-        function showReturnOptions(orderId) {
-            Swal.fire({
-                title: 'سبب الإرجاع',
-                input: 'select',
-                inputOptions: {
-                    'تالف': 'تالف/معيب',
-                    'غير مطابق': 'غير مطابق للمواصفات',
-                    'زيادة': 'زيادة في الكمية',
-                    'أخرى': 'أسباب أخرى'
-                },
-                inputPlaceholder: 'اختر السبب',
-                showCancelButton: true,
-                confirmButtonText: 'متابعة',
-                cancelButtonText: 'إلغاء',
-                inputValidator: (value) => {
-                    if (!value) {
-                        return 'يجب اختيار سبب الإرجاع';
-                    }
-                }
-            }).then(async (result) => {
-                if (result.isConfirmed) {
-                    const reason = result.value;
-                    const { value: note } = await Swal.fire({
-                        title: 'ملاحظات إضافية',
-                        input: 'textarea',
-                        inputPlaceholder: 'أدخل تفاصيل إضافية عن سبب الإرجاع...',
-                        showCancelButton: true,
-                        confirmButtonText: 'إرجاع',
-                        cancelButtonText: 'إلغاء'
-                    });
-                    
-                    if (note !== undefined) {
-                        const fullNote = `${reason}: ${note}`;
-                        await updateOrderStatus(orderId, 'مرتجع - بانتظار المشتريات', fullNote);
-                    }
-                }
-            });
-        }
-        
-        // ===== عرض الكود =====
-        async function showCode(orderId) {
-            const result = await api({
-                action: "GET_CODE",
-                orderId: orderId,
-                role: currentUser.role
-            });
-            
-            if (result?.status === "success") {
-                Swal.fire({
-                    title: 'الكود المطلوب',
-                    html: `
-                    <div class="text-center">
-                        <div class="text-6xl font-black text-gray-800 my-6 font-mono">${result.code || 'N/A'}</div>
-                        <p class="text-gray-600">استخدم هذا الكود لإتمام العملية التالية</p>
-                    </div>
-                    `,
-                    confirmButtonText: 'تم',
-                    width: 500
-                });
-            } else {
-                Swal.fire('خطأ', 'لا يوجد كود لهذا الطلب', 'error');
-            }
-        }
-        
-        // ===== عرض تفاصيل الطلب =====
-        async function viewOrderDetails(orderId) {
-            const order = ordersData.find(o => o.id === orderId);
-            if (!order) {
-                Swal.fire('خطأ', 'الطلب غير موجود', 'error');
-                return;
-            }
-            
-            const modal = document.getElementById('orderDetailsModal');
-            if (!modal) return;
-            
-            // بناء محتوى التفاصيل
-            let html = `
-            <div class="flex justify-between items-center mb-6 pb-4 border-b">
-                <h3 class="font-bold text-xl text-gray-800">تفاصيل الطلب #${order.id}</h3>
-                <button onclick="hideModal('orderDetailsModal')" class="text-gray-400 text-2xl hover:text-gray-600 transition">&times;</button>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <div class="space-y-4">
-                    <div>
-                        <h4 class="text-sm font-bold text-gray-500 mb-2">المعلومات الأساسية</h4>
-                        <div class="bg-gray-50 p-4 rounded-xl">
-                            <div class="grid grid-cols-2 gap-3">
-                                <div>
-                                    <p class="text-xs text-gray-500">اسم المادة</p>
-                                    <p class="font-bold">${order.item || 'غير معروف'}</p>
-                                </div>
-                                <div>
-                                    <p class="text-xs text-gray-500">الباركود</p>
-                                    <p class="font-mono">${order.barcode || 'لا يوجد'}</p>
-                                </div>
-                                <div>
-                                    <p class="text-xs text-gray-500">النوع</p>
-                                    <p class="font-bold ${order.type === 'فوري' ? 'text-orange-600' : 'text-purple-600'}">${order.type}</p>
-                                </div>
-                                <div>
-                                    <p class="text-xs text-gray-500">الأولوية</p>
-                                    <p class="font-bold ${order.priority === 'عاجل' ? 'text-red-600' : order.priority === 'عالي' ? 'text-orange-600' : 'text-gray-600'}">${order.priority || 'عادي'}</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div>
-                        <h4 class="text-sm font-bold text-gray-500 mb-2">المواصفات</h4>
-                        <div class="bg-gray-50 p-4 rounded-xl">
-                            <p>${order.specs || 'لا توجد مواصفات'}</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="space-y-4">
-                    <div>
-                        <h4 class="text-sm font-bold text-gray-500 mb-2">معلومات التتبع</h4>
-                        <div class="bg-gray-50 p-4 rounded-xl">
-                            <div class="space-y-3">
-                                <div class="flex justify-between">
-                                    <span class="text-gray-600">الطالب:</span>
-                                    <span class="font-bold">${order.requester || 'غير معروف'}</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="text-gray-600">تاريخ الطلب:</span>
-                                    <span class="font-bold">${order.date ? new Date(order.date).toLocaleString('ar-SA') : 'غير معروف'}</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="text-gray-600">آخر تحديث:</span>
-                                    <span class="font-bold">${order.updated ? new Date(order.updated).toLocaleString('ar-SA') : 'غير معروف'}</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="text-gray-600">الحالة الحالية:</span>
-                                    <span class="px-3 py-1 rounded-full ${getStatusClass(order.status)} font-bold">${order.status || 'غير معروف'}</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="text-gray-600">المسؤول الحالي:</span>
-                                    <span class="font-bold">${order.owner || 'لا أحد'}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div>
-                        <h4 class="text-sm font-bold text-gray-500 mb-2">معلومات إضافية</h4>
-                        <div class="bg-gray-50 p-4 rounded-xl">
-                            <div class="space-y-2">
-                                <div class="flex justify-between">
-                                    <span class="text-gray-600">القسم:</span>
-                                    <span class="font-bold">${order.department || 'غير محدد'}</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="text-gray-600">المشروع:</span>
-                                    <span class="font-bold">${order.project || 'غير محدد'}</span>
-                                </div>
-                                ${order.returnReason ? `
-                                <div class="flex justify-between">
-                                    <span class="text-gray-600">سبب الإرجاع:</span>
-                                    <span class="font-bold text-red-600">${order.returnReason}</span>
-                                </div>
-                                ` : ''}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div>
-                <h4 class="text-sm font-bold text-gray-500 mb-2">سجل التتبع</h4>
-                <div class="bg-gray-50 p-4 rounded-xl max-h-60 overflow-y-auto">
-            `;
-            
-            // عرض سجل التتبع
-            if (order.history && Array.isArray(order.history)) {
-                order.history.forEach((entry, index) => {
-                    const time = entry.time ? new Date(entry.time).toLocaleString('ar-SA') : 'غير معروف';
-                    html += `
-                    <div class="flex items-start gap-3 mb-3 pb-3 ${index < order.history.length - 1 ? 'border-b border-gray-200' : ''}">
-                        <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 flex-shrink-0">
-                            ${index + 1}
-                        </div>
-                        <div class="flex-1">
-                            <div class="flex justify-between items-center">
-                                <span class="font-bold">${entry.status || 'تحديث'}</span>
-                                <span class="text-xs text-gray-500">${time}</span>
-                            </div>
-                            <p class="text-sm text-gray-600 mt-1">بواسطة: ${entry.user || 'غير معروف'}</p>
-                            ${entry.note ? `<p class="text-xs text-gray-500 mt-1">ملاحظة: ${entry.note}</p>` : ''}
-                        </div>
-                    </div>
-                    `;
-                });
-            } else {
-                html += `<p class="text-gray-500 text-center py-4">لا يوجد سجل تتبع</p>`;
-            }
-            
-            html += `
-                </div>
-            </div>
-            
-            <div class="mt-6 pt-6 border-t">
-                <div class="flex gap-3 justify-end">
-                    <button onclick="hideModal('orderDetailsModal')" class="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-bold transition-colors">
-                        إغلاق
-                    </button>
-                    ${renderOrderActions(order).replace(/px-4 py-2/g, 'px-6 py-3').replace(/text-sm/g, 'text-base')}
-                </div>
-            </div>
-            `;
-            
-            modal.innerHTML = html;
-            showModal('orderDetailsModal');
-        }
-        
-        // ===== مساعد فئة الحالة =====
-        function getStatusClass(status) {
-            if (!status) return 'bg-gray-100 text-gray-600';
-            if (status.includes('مخزن') || status.includes('جاهز')) return 'bg-blue-100 text-blue-700';
-            if (status.includes('استلام')) return 'bg-green-100 text-green-700';
-            if (status.includes('مرتجع')) return 'bg-red-100 text-red-700';
-            if (status.includes('بانتظار')) return 'bg-yellow-100 text-yellow-700';
-            return 'bg-gray-100 text-gray-600';
-        }
-        
-        // ===== تحميل الإشعارات =====
-        async function loadNotifications() {
-            // محاكاة بيانات الإشعارات (يمكن ربطها بالخادم)
-            notifications = [
-                { id: 1, title: 'طلب جديد', message: 'طلب مادة: شاشة لابتوب Dell', time: 'قبل 5 دقائق', read: false, type: 'info' },
-                { id: 2, title: 'مهمة عاجلة', message: 'طلب عاجل يحتاج إجراء فوري', time: 'قبل ساعة', read: false, type: 'warning' },
-                { id: 3, title: 'مخزون منخفض', message: 'مادة: بطارية لابتوب أقل من الحد الأدنى', time: 'قبل 3 ساعات', read: true, type: 'danger' }
-            ];
-            
-            updateNotificationBadge();
-        }
-        
-        // ===== تحديث عداد الإشعارات =====
-        function updateNotificationBadge() {
-            const unreadCount = notifications.filter(n => !n.read).length;
-            const badge = document.getElementById('notificationCount');
-            
-            if (badge) {
-                if (unreadCount > 0) {
-                    badge.textContent = unreadCount;
-                    show('notificationCount');
-                } else {
-                    hide('notificationCount');
-                }
-            }
-        }
-        
-        // ===== عرض الإشعارات =====
-        function showNotifications() {
-            const container = document.getElementById('notificationsList');
-            if (!container) return;
-            
-            if (notifications.length === 0) {
-                container.innerHTML = `
-                <div class="text-center py-8">
-                    <i class="bi bi-bell-slash text-3xl text-gray-300 mb-2"></i>
-                    <p class="text-gray-500">لا توجد إشعارات جديدة</p>
-                </div>
-                `;
-            } else {
-                let html = '';
-                notifications.forEach(notification => {
-                    const typeClass = notification.type === 'danger' ? 'border-red-200 bg-red-50' : 
-                                     notification.type === 'warning' ? 'border-orange-200 bg-orange-50' : 
-                                     'border-blue-200 bg-blue-50';
-                    
-                    html += `
-                    <div class="p-4 rounded-xl border ${typeClass} ${notification.read ? 'opacity-75' : ''}">
-                        <div class="flex justify-between items-start mb-2">
-                            <h4 class="font-bold">${notification.title}</h4>
-                            <span class="text-xs text-gray-500">${notification.time}</span>
-                        </div>
-                        <p class="text-sm text-gray-600">${notification.message}</p>
-                        ${!notification.read ? `
-                        <div class="mt-2 text-right">
-                            <button onclick="markNotificationAsRead(${notification.id})" class="text-xs text-blue-600 hover:text-blue-800">
-                                وضع علامة كمقروء
-                            </button>
-                        </div>
-                        ` : ''}
-                    </div>
-                    `;
-                });
-                
-                container.innerHTML = html;
-            }
-            
-            showModal('notificationsModal');
-        }
-        
-        // ===== وضع علامة على إشعار كمقروء =====
-        function markNotificationAsRead(id) {
-            const notification = notifications.find(n => n.id === id);
-            if (notification) {
-                notification.read = true;
-                updateNotificationBadge();
-                showNotifications(); // تحديث العرض
-            }
-        }
-        
-        // ===== تصدير Excel =====
-        async function exportExcel() {
-            Swal.fire({
-                title: 'جاري التصدير',
-                text: 'يرجى الانتظار أثناء تحضير الملف...',
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
-            });
-            
-            const result = await api({ action: "EXPORT_EXCEL" });
-            
-            if (result?.status === "success") {
-                try {
-                    // إنشاء رابط تنزيل
-                    const csvContent = atob(result.csvData);
-                    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
-                    const url = URL.createObjectURL(blob);
-                    const link = document.createElement('a');
-                    
-                    link.href = url;
-                    link.download = result.filename || `طلبات_${new Date().toISOString().slice(0,10)}.csv`;
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                    
-                    Swal.fire('تم التصدير', 'تم تنزيل الملف بنجاح', 'success');
-                } catch (error) {
-                    Swal.fire('خطأ', 'فشل في تحميل الملف', 'error');
-                }
-            } else {
-                Swal.fire('خطأ', 'فشل في تصدير البيانات', 'error');
-            }
-        }
-        
-        // ===== توليد التقارير =====
-        async function generateReport(type) {
-            loading(true, `جاري إنشاء التقرير ${type === 'daily' ? 'اليومي' : type === 'weekly' ? 'الأسبوعي' : 'الشهري'}...`);
-            
-            const result = await api({
-                action: "GET_REPORTS",
-                reportType: type
-            });
-            
-            loading(false);
-            
-            if (result?.status === "success") {
-                const container = document.getElementById('reportContent');
-                const report = result.report;
-                
-                let html = `
-                <div class="mb-6">
-                    <h4 class="text-lg font-bold text-gray-800 mb-2">${report.summary?.title || 'تقرير'}</h4>
-                    <div class="flex gap-4 text-sm text-gray-600">
-                        <span><i class="bi bi-calendar mr-1"></i> ${report.summary?.period || 'غير محدد'}</span>
-                        <span><i class="bi bi-clock mr-1"></i> ${report.summary?.date || ''}</span>
-                    </div>
-                </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    <div class="bg-blue-50 p-4 rounded-xl text-center">
-                        <div class="text-2xl font-black text-blue-700">${report.data?.total || 0}</div>
-                        <div class="text-sm text-blue-600">إجمالي الطلبات</div>
-                    </div>
-                    <div class="bg-green-50 p-4 rounded-xl text-center">
-                        <div class="text-2xl font-black text-green-700">${report.data?.statusAnalysis?.مكتملة || 0}</div>
-                        <div class="text-sm text-green-600">مكتملة</div>
-                    </div>
-                    <div class="bg-red-50 p-4 rounded-xl text-center">
-                        <div class="text-2xl font-black text-red-700">${report.data?.overdueOrders?.length || 0}</div>
-                        <div class="text-sm text-red-600">متأخرة</div>
-                    </div>
-                </div>
-                `;
-                
-                // تحليل الحالات
-                if (report.data?.statusAnalysis) {
-                    html += `
-                    <div class="mb-6">
-                        <h5 class="font-bold text-gray-700 mb-3">تحليل الحالات</h5>
-                        <div class="bg-gray-50 p-4 rounded-xl">
-                            <div class="space-y-3">
-                    `;
-                    
-                    for (const [status, count] of Object.entries(report.data.statusAnalysis)) {
-                        const percentage = report.data.total > 0 ? Math.round((count / report.data.total) * 100) : 0;
-                        const color = status === 'مكتملة' ? 'bg-green-500' : 
-                                     status === 'معلقة' ? 'bg-yellow-500' : 
-                                     status === 'قيد المعالجة' ? 'bg-blue-500' : 'bg-gray-500';
-                        
-                        html += `
-                        <div>
-                            <div class="flex justify-between text-sm mb-1">
-                                <span>${status}</span>
-                                <span>${count} (${percentage}%)</span>
-                            </div>
-                            <div class="w-full bg-gray-200 rounded-full h-2">
-                                <div class="${color} h-2 rounded-full" style="width: ${percentage}%"></div>
-                            </div>
-                        </div>
-                        `;
-                    }
-                    
-                    html += `
-                            </div>
-                        </div>
-                    </div>
-                    `;
-                }
-                
-                // الطلبات المتأخرة
-                if (report.data?.overdueOrders?.length > 0) {
-                    html += `
-                    <div class="mb-6">
-                        <h5 class="font-bold text-gray-700 mb-3">طلبات متأخرة (أكثر من 3 أيام)</h5>
-                        <div class="bg-red-50 border border-red-100 rounded-xl overflow-hidden">
-                    `;
-                    
-                    report.data.overdueOrders.forEach(order => {
-                        html += `
-                        <div class="p-3 border-b border-red-100 last:border-b-0">
-                            <div class="flex justify-between items-center">
-                                <div>
-                                    <span class="font-medium">${order.item || 'غير معروف'}</span>
-                                    <div class="text-xs text-gray-600">${order.department || ''}</div>
-                                </div>
-                                <div class="text-right">
-                                    <span class="text-sm font-bold text-red-700">${order.days} يوم</span>
-                                    <div class="text-xs text-gray-500">#${order.id || ''}</div>
-                                </div>
-                            </div>
-                        </div>
-                        `;
-                    });
-                    
-                    html += `
-                        </div>
-                    </div>
-                    `;
-                }
-                
-                container.innerHTML = html;
-                
-                // التبديل إلى تبويب التقارير
-                switchTab('reports');
-            } else {
-                Swal.fire('خطأ', 'فشل في إنشاء التقرير', 'error');
-            }
-        }
-        
-        // ===== تحميل بيانات الإدارة =====
-        async function loadAdminData() {
-            const statsResult = await api({ action: "GET_STATS" });
-            if (statsResult?.status === "success") {
-                updateAdminStats(statsResult.stats);
-            }
-            
-            updateActivityLog();
-        }
-        
-        // ===== تحديث سجل النشاط =====
-        function updateActivityLog() {
-            const container = document.getElementById('activityLog');
-            if (!container) return;
-            
-            // محاكاة بيانات سجل النشاط
-            const activities = [
-                { user: 'علي أحمد', action: 'إنشاء طلب', details: 'شاشة لابتوب Dell', time: 'قبل 5 دقائق' },
-                { user: 'محمد خالد', action: 'تحديث حالة', details: 'تم الشراء - طابعة HP', time: 'قبل ساعة' },
-                { user: 'حسين محمد', action: 'استلام بالمخزن', details: 'ماوس لاسلكي', time: 'قبل 3 ساعات' },
-                { user: 'النظام', action: 'نسخ احتياطي', details: 'تم بنجاح', time: 'أمس' },
-                { user: 'سامي فني', action: 'استلام نهائي', details: 'محول HDMI', time: 'قبل يومين' }
-            ];
-            
-            let html = '';
-            activities.forEach(activity => {
-                html += `
-                <div class="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-                    <div class="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold flex-shrink-0">
-                        ${activity.user.charAt(0)}
-                    </div>
-                    <div class="flex-1">
-                        <div class="flex justify-between">
-                            <span class="font-bold">${activity.user}</span>
-                            <span class="text-xs text-gray-500">${activity.time}</span>
-                        </div>
-                        <p class="text-sm text-gray-700">${activity.action}: ${activity.details}</p>
-                    </div>
-                </div>
-                `;
-            });
-            
-            container.innerHTML = html;
-        }
-        
-        // ===== إجراءات الإدارة =====
-        function adminAction(action) {
-            switch(action) {
-                case 'backup':
-                    Swal.fire('قريباً', 'ميزة النسخ الاحتياطي قيد التطوير', 'info');
-                    break;
-                case 'cleanup':
-                    Swal.fire({
-                        title: 'تنظيف البيانات القديمة',
-                        text: 'هل أنت متأكد من حذف البيانات الأقدم من 90 يوم؟',
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonText: 'نعم، قم بالتنظيف',
-                        cancelButtonText: 'إلغاء'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            Swal.fire('تم', 'سيتم تنظيف البيانات في النسخة القادمة', 'success');
-                        }
-                    });
-                    break;
-                case 'users':
-                    Swal.fire('قريباً', 'ميزة إدارة المستخدمين قيد التطوير', 'info');
-                    break;
-                case 'settings':
-                    Swal.fire('قريباً', 'ميزة إعدادات النظام قيد التطوير', 'info');
-                    break;
-            }
-        }
-        
-        // ===== تسجيل الخروج =====
-        function doLogout() {
-            Swal.fire({
-                title: 'تسجيل الخروج',
-                text: 'هل أنت متأكد من تسجيل الخروج؟',
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonText: 'نعم، سجل خروج',
-                cancelButtonText: 'إلغاء',
-                confirmButtonColor: '#dc2626',
-                cancelButtonColor: '#6b7280'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    currentUser = null;
-                    ordersData = [];
-                    catalogData = [];
-                    statsData = {};
-                    notifications = [];
-                    
-                    hide('appScreen');
-                    show('loginScreen');
-                    
-                    // إعادة تعيين حقول الدخول
-                    document.getElementById('loginId').value = '';
-                    document.getElementById('loginPass').value = '';
-                    
-                    Swal.fire('تم الخروج', 'تم تسجيل الخروج بنجاح', 'success');
-                }
-            });
-        }
-        
-        // ===== مسح الباركود =====
-        function scanBarcode() {
-            // محاكاة مسح الباركود
-            const barcodes = ['BC001', 'BC002', 'BC003', 'BC004', 'BC005'];
-            const randomBarcode = barcodes[Math.floor(Math.random() * barcodes.length)];
-            document.getElementById('newBar').value = randomBarcode;
-            
-            // البحث التلقائي في الكتالوج
-            const item = catalogData.find(i => i.barcode === randomBarcode);
-            if (item) {
-                document.getElementById('newItem').value = item.name;
-                document.getElementById('newSpecs').value = item.description || '';
-                
-                Swal.fire('تم المسح', `تم تحديد المادة: ${item.name}`, 'success');
-            }
-        }
-        
-        // ===== إضافة مادة للكتالوج =====
-        function showCatalogItemModal() {
-            Swal.fire('قريباً', 'ميزة إضافة المواد للكتالوج قيد التطوير', 'info');
-        }
-        
-        // ===== تحرير مادة في الكتالوج =====
-        function editCatalogItem(barcode) {
-            Swal.fire('قريباً', `ميزة تحرير المادة ${barcode} قيد التطوير`, 'info');
-        }
-        
-        // ===== حذف مادة من الكتالوج =====
-        function deleteCatalogItem(barcode) {
-            Swal.fire({
-                title: 'حذف المادة',
-                text: `هل أنت متأكد من حذف المادة ${barcode}؟`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'نعم، احذف',
-                cancelButtonText: 'إلغاء'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    Swal.fire('تم', `سيتم حذف المادة ${barcode} في النسخة القادمة`, 'success');
-                }
-            });
-        }
-        
-        // ===== تحديث الرسوم البيانية =====
-        function updateChart() {
-            const period = document.getElementById('chartPeriod').value;
-            // يمكن تحديث البيانات حسب الفترة المحددة
-            Swal.fire('تم التحديث', `تم تغيير الفترة إلى ${period === 'week' ? 'أسبوع' : period === 'month' ? 'شهر' : 'ربع سنة'}`, 'info');
-        }
-        
-        // ===== تهيئة أولية =====
-        document.addEventListener('DOMContentLoaded', function() {
-            // إظهار شاشة الدخول
-            show('loginScreen');
-            
-            // إضافة مستمع حدث لزر Enter
-            document.getElementById('loginPass').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    doLogin();
-                }
-            });
-            
-            // إغلاق النوافذ المنبثقة عند النقر خارجها
-            document.addEventListener('click', function(e) {
-                if (e.target.id === 'orderModal') hideModal('orderModal');
-                if (e.target.id === 'orderDetailsModal') hideModal('orderDetailsModal');
-                if (e.target.id === 'notificationsModal') hideModal('notificationsModal');
-            });
-            
-            // تعيين تواريخ الفلتر
-            const today = new Date().toISOString().split('T')[0];
-            const lastMonth = new Date();
-            lastMonth.setMonth(lastMonth.getMonth() - 1);
-            const lastMonthStr = lastMonth.toISOString().split('T')[0];
-            
-            document.getElementById('filterDateFrom').value = lastMonthStr;
-            document.getElementById('filterDateTo').value = today;
-        });
-    </script>
+    $('feed-grid').querySelectorAll('[data-open]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const item = State.items.find(x => x.subject === btn.dataset.open);
+        if (item) openModal(item, btn.dataset.which);
+      });
+    });
+  }
+
+  function openModal(item, which) {
+    State.activeModalItem = item;
+    $('modal-title').textContent = '📖 ' + item.subject;
+    $('modal-tabs').classList.toggle('hidden', !item.previous);
+    renderModalContent(which || 'latest');
+    $('modal-backdrop').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function renderModalContent(which) {
+    const item = State.activeModalItem;
+    const data = (which === 'previous' && item.previous) ? item.previous : item.latest;
+    document.querySelectorAll('.modal-tab').forEach(t => t.classList.toggle('active', t.dataset.which === which));
+    $('modal-sub').textContent = `👨‍🏫 ${data.teacher}  •  🕒 ${data.timeLabel}`;
+
+    let html = '';
+    if (data.topic) {
+      html += `<div class="detail-block" style="border-right:4px solid #1D4ED8">
+        <h4><span>🔖 موضوع المحاضرة القادمة</span><span>الشعب: ${esc(data.divisions)}</span></h4>
+        <strong style="font-size:16px">${esc(data.topic)}</strong>
+      </div>`;
+    }
+
+    html += `<div class="detail-block">
+      <h4><span>🔜 المطلوب للمحاضرة القادمة</span><span>📄 الصفحات: ${esc(data.nextPages || '—')}</span></h4>
+      <div class="rich-content">${data.nextLesson || '<span style="color:#64748B">لا يوجد نص تفصيلي إضافي (التحضير مسجّل قبل تحديث التفاصيل أو يكتفي بالصفحات).</span>'}</div>
+    </div>`;
+
+    html += `<div class="detail-block">
+      <h4><span>🔙 ما تم شرحه سابقاً</span><span>📄 الصفحات: ${esc(data.prevPages || '—')}</span></h4>
+      <div class="rich-content">${data.prevLesson || '<span style="color:#64748B">—</span>'}</div>
+    </div>`;
+
+    if (data.youtubeLink) {
+      html += `<a class="yt-btn" href="${esc(data.youtubeLink)}" target="_blank" rel="noopener">▶️ مشاهدة فيديو اليوتيوب الداعم</a>`;
+    }
+    if (data.filesCount > 0) {
+      html += `<div class="files-note">📎 يوجد (${data.filesCount}) ملف/مرفق لهذا التحضير — يمكنك تنزيلها من قناة الصف على التليجرام.</div>`;
+    }
+
+    $('modal-body').innerHTML = html;
+  }
+
+  function closeModal() {
+    $('modal-backdrop').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  init();
+</script>
 </body>
 </html>

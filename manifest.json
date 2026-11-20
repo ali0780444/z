@@ -1,0 +1,19 @@
+{
+  "name": "منصة إعدادية الرياحي - التحضير اليومي",
+  "short_name": "إعدادية الرياحي",
+  "description": "بوابة التحضير اليومي والواجبات لطلبة وكادر إعدادية الرياحي",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f3f5f9",
+  "theme_color": "#1B2A49",
+  "dir": "rtl",
+  "lang": "ar",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2997/2997322.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
