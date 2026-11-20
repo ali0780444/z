@@ -200,7 +200,7 @@
 
 <script>
   const CONFIG = {
-    API_URL: "https://script.google.com/macros/s/AKfycbwQBStZwCwavJHFWH_FZFD98IrnD8JjXcwStxC9TUQfQk3dRwpMHr_nnRDtwbqstCVgGA/exec",
+    API_URL: "https://script.google.com/macros/s/AKfycbzZPqtdS9kJSe-cTBiISAHN6m-8B6UO3vdFvWQGi7sx81zlwZmuzcUrO29zd5D5Rw3bLQ/exec",
     ONESIGNAL_APP_ID: "649b3d75-0371-4630-8294-0cbd915c454b"
   };
 
@@ -221,13 +221,23 @@
   window.OneSignalDeferred = window.OneSignalDeferred || [];
   OneSignalDeferred.push(async function(OneSignal) {
     await OneSignal.init({ appId: CONFIG.ONESIGNAL_APP_ID, allowLocalhostAsSecureOrigin: true });
+    if (OneSignal.Notifications.permission && currentUser && !currentUser.isAdmin) {
+      await OneSignal.User.addTags({
+        role: 'teacher',
+        teacher_id: String(currentUser.userId || '').trim().toUpperCase()
+      });
+      $('staff-notify-btn').textContent = '✔️ الإشعارات مفعّلة';
+    }
   });
 
   $('staff-notify-btn').addEventListener('click', () => {
     OneSignalDeferred.push(async function(OneSignal) {
       await OneSignal.Notifications.requestPermission();
       if (OneSignal.Notifications.permission && currentUser) {
-        await OneSignal.User.addTags({ role: 'teacher', userId: currentUser.userId });
+        await OneSignal.User.addTags({
+          role: 'teacher',
+          teacher_id: String(currentUser.userId || '').trim().toUpperCase()
+        });
         $('staff-notify-btn').textContent = '✔️ الإشعارات مفعّلة';
       }
     });
@@ -268,6 +278,15 @@
         $('class-select').innerHTML = teacherOptions.map((o, i) => `<option value="${i}">${esc(o.className)} — ${esc(o.subject)}</option>`).join('');
         renderDivs();
         showView('teacher');
+        OneSignalDeferred.push(async function(OneSignal) {
+          if (OneSignal.Notifications.permission) {
+            await OneSignal.User.addTags({
+              role: 'teacher',
+              teacher_id: String(currentUser.userId || '').trim().toUpperCase()
+            });
+            $('staff-notify-btn').textContent = '✔️ الإشعارات مفعّلة';
+          }
+        });
       } else {
         $('admin-welcome-message').textContent = 'أهلاً بك، ' + r.user.userName;
         const d = new Date();
@@ -356,12 +375,16 @@
   }));
 
   document.querySelectorAll('[data-push]').forEach(btn => btn.addEventListener('click', async () => {
+    const targetMap = {
+      students: 'students_all',
+      teachers: 'teachers_all',
+      missing: 'teachers_missing'
+    };
     showStatus($('admin-status'), 'جاري إرسال الإشعار...', 'info');
     try {
-      const r = await api('adminSendPush', {
-        target: btn.dataset.push,
-        title: $('n-title').value.trim(),
-        body: $('n-body').value.trim()
+      const r = await api('sendInstantNotification', {
+        target: targetMap[btn.dataset.push] || btn.dataset.push,
+        customMessage: $('n-body').value.trim()
       });
       showStatus($('admin-status'), esc(r.message || 'تم الإرسال'), r.success ? 'success' : 'error');
     } catch (err) {
