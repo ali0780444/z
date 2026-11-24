@@ -1,0 +1,19 @@
+{
+  "name": "إعدادية الرياحي - بوابة الكادر",
+  "short_name": "كادر الرياحي",
+  "description": "بوابة الكادر التدريسي والإدارة لإعدادية الرياحي",
+  "start_url": "./staff.html",
+  "display": "standalone",
+  "background_color": "#f3f5f9",
+  "theme_color": "#1B2A49",
+  "dir": "rtl",
+  "lang": "ar",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2997/2997322.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

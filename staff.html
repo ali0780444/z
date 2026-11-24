@@ -4,9 +4,11 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#1B2A49">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="كادر الرياحي">
   <title>إعدادية الرياحي — بوابة الكادر والإدارة</title>
-  <link rel="manifest" href="./manifest.json">
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="manifest" href="./manifest-staff.json">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
   <style>
     :root {
@@ -15,28 +17,29 @@
       --ok-bg: #dcfce7; --ok: #166534; --err-bg: #fee2e2; --err: #991b1b; --warn-bg: #fef3c7; --warn: #92400e;
     }
     * { box-sizing: border-box; }
-    body { margin: 0; padding: 14px; font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); direction: rtl; }
-    .container { max-width: 760px; margin: 10px auto; background: var(--card); padding: 24px; border-radius: 16px; box-shadow: 0 6px 24px rgba(27,42,73,.08); }
+    html, body { margin: 0; padding: 0; width: 100%; overflow-x: hidden; font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); direction: rtl; }
+    body { padding: 14px; }
+    .container { max-width: 760px; margin: 10px auto; background: var(--card); padding: 22px; border-radius: 16px; box-shadow: 0 6px 24px rgba(27,42,73,.08); }
     .container.narrow { max-width: 390px; text-align: center; margin-top: 40px; }
     .container.wide { max-width: 1080px; }
     .view { display: none; }
     #login-view { display: block; }
     h2 { text-align: center; margin: 0 0 4px; color: var(--navy); }
     h4 { margin: 0 0 12px; color: var(--navy); }
-    .subtitle { text-align: center; color: var(--muted); margin: 0 0 18px; font-size: 14px; }
+    .subtitle { text-align: center; color: var(--muted); margin: 0 0 16px; font-size: 14px; }
     .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap: 8px; flex-wrap: wrap; }
     .link-btn { background: none; border: none; color: var(--muted); cursor: pointer; font: inherit; font-size: 14px; text-decoration: underline; }
     label { display: block; margin: 10px 0 5px; font-weight: 600; color: #374151; font-size: 14px; }
-    input[type="text"], input[type="url"], input[type="date"], input[type="number"], select, textarea {
+    input[type="text"], input[type="url"], input[type="date"], input[type="number"], input[type="search"], select, textarea {
       width: 100%; padding: 9px 12px; border: 1px solid var(--border); border-radius: 10px; font: inherit; font-size: 14.5px; background: #fff;
     }
     .row { display: flex; gap: 10px; flex-wrap: wrap; }
     .row > * { flex: 1; min-width: 150px; }
     fieldset { border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; margin: 16px 0 0; background: var(--soft); }
     legend { font-weight: 700; color: var(--primary-dark); padding: 0 8px; }
-    .btn { display: inline-block; border: none; border-radius: 10px; padding: 9px 15px; font: inherit; font-weight: 700; cursor: pointer; background: #e5e7eb; color: var(--text); font-size: 14px; }
+    .btn { display: inline-block; border: none; border-radius: 10px; padding: 9px 15px; font: inherit; font-weight: 700; cursor: pointer; background: #e5e7eb; color: var(--text); font-size: 13.5px; }
     .btn:disabled { opacity: .6; cursor: not-allowed; }
-    .btn-primary { width: 100%; margin-top: 18px; padding: 12px; font-size: 16px; color: #fff; background: linear-gradient(145deg, var(--primary), var(--primary-dark)); }
+    .btn-primary { width: 100%; margin-top: 16px; padding: 12px; font-size: 15.5px; color: #fff; background: linear-gradient(145deg, var(--primary), var(--primary-dark)); }
     .btn-blue { background: var(--primary); color: #fff; }
     .btn-red { background: #fee2e2; color: #b91c1c; }
     .btn-gold { background: #fdf4d7; color: #7a5d00; }
@@ -45,34 +48,39 @@
     .status { margin: 12px 0; padding: 12px; border-radius: 10px; display: none; line-height: 1.8; white-space: pre-line; }
     .status.success { background: var(--ok-bg); color: var(--ok); }
     .status.error { background: var(--err-bg); color: var(--err); }
-    .status.warning { background: var(--warn-bg); color: var(--warn); }
     .status.info { background: #e0e7ff; color: #3730a3; }
-    .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
-    .chip { display: inline-flex; align-items: center; padding: 6px 14px; border: 1.5px solid var(--border); border-radius: 999px; background: #fff; cursor: pointer; font-weight: 600; font-size: 13.5px; }
+    .prompt-banner {
+      background: #FEF3C7; border: 1px solid #F59E0B; color: #78350F; border-radius: 12px;
+      padding: 10px 12px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between;
+      gap: 8px; flex-wrap: wrap; font-size: 13px; font-weight: 700;
+    }
+    .chips { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 6px; }
+    .chip { display: inline-flex; align-items: center; padding: 5px 13px; border: 1.5px solid var(--border); border-radius: 999px; background: #fff; cursor: pointer; font-weight: 600; font-size: 13px; }
     .chip input { display: none; }
     .chip.on { background: var(--primary); border-color: var(--primary); color: #fff; }
     .editor { border: 1px solid var(--border); border-radius: 10px; background: #fff; margin-top: 10px; overflow: hidden; }
     .toolbar { display: flex; flex-wrap: wrap; gap: 2px; padding: 5px; border-bottom: 1px solid var(--border); background: #f9fafb; }
     .toolbar button { border: none; background: none; border-radius: 6px; padding: 4px 9px; cursor: pointer; font: inherit; font-size: 13px; }
-    .editable { min-height: 90px; padding: 10px 12px; line-height: 1.8; outline: none; }
+    .editable { min-height: 88px; padding: 10px 12px; line-height: 1.8; outline: none; }
     .editable:empty:before { content: attr(data-placeholder); color: #9ca3af; }
-    .tabs { display: flex; gap: 4px; border-bottom: 2px solid var(--border); margin: 16px 0; overflow-x: auto; }
-    .tab { background: none; border: none; border-bottom: 3px solid transparent; padding: 10px 14px; font: inherit; font-weight: 700; color: var(--muted); cursor: pointer; white-space: nowrap; font-size: 14px; }
+    .tabs { display: flex; gap: 4px; border-bottom: 2px solid var(--border); margin: 14px 0; overflow-x: auto; }
+    .tab { background: none; border: none; border-bottom: 3px solid transparent; padding: 9px 13px; font: inherit; font-weight: 700; color: var(--muted); cursor: pointer; white-space: nowrap; font-size: 13.5px; }
     .tab.active { color: var(--primary); border-color: var(--primary); }
     .panel { display: none; }
     .panel.active { display: block; }
-    .card { border: 1px solid var(--border); border-radius: 12px; padding: 16px; background: var(--soft); margin-bottom: 14px; }
+    .card { border: 1px solid var(--border); border-radius: 12px; padding: 15px; background: var(--soft); margin-bottom: 14px; }
     .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 12px; margin-bottom: 14px; }
     table { width: 100%; border-collapse: collapse; font-size: 13.5px; background: #fff; }
-    th, td { padding: 9px 10px; border-bottom: 1px solid var(--border); text-align: right; }
+    th, td { padding: 8px 10px; border-bottom: 1px solid var(--border); text-align: right; }
     th { background: #f1f5f9; color: #334155; white-space: nowrap; }
-    .actions-cell { display: flex; gap: 6px; flex-wrap: wrap; }
-    .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+    .actions-cell { display: flex; gap: 5px; flex-wrap: wrap; }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11.5px; font-weight: 700; }
     .badge-admin { background: #dbeafe; color: #1e40af; }
     .badge-teacher { background: #f1f5f9; color: #475569; }
+    .assign-pill { display: inline-flex; align-items: center; gap: 6px; background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 5px 10px; margin: 4px; font-size: 13px; }
     .check { display: flex; align-items: center; gap: 8px; margin: 10px 0; font-weight: 600; cursor: pointer; }
     .check input { width: 18px; height: 18px; }
-    .hint { font-size: 12.5px; color: var(--muted); margin-top: 4px; }
+    .hidden { display: none !important; }
     @media (max-width: 600px) {
       body { padding: 0; background: #fff; }
       .container, .container.wide { margin: 0; padding: 14px; border-radius: 0; box-shadow: none; }
@@ -80,11 +88,16 @@
   </style>
 </head>
 <body>
+
   <!-- شاشة تسجيل الدخول -->
   <div id="login-view" class="view">
     <div class="container narrow">
       <h2>إعدادية الرياحي</h2>
       <p class="subtitle">بوابة الكادر التدريسي والإدارة</p>
+      <div id="login-install-banner" class="prompt-banner hidden" style="text-align:right">
+        <span>📲 ثبّت تطبيق الكادر على هاتفك للوصول السريع</span>
+        <button type="button" class="btn btn-sm btn-blue" id="btn-install-login">⬇️ تثبيت</button>
+      </div>
       <form id="login-form">
         <input type="text" id="userId" placeholder="رمز المستخدم" required autocomplete="off">
         <label class="check" style="justify-content:center;font-weight:400"><input type="checkbox" id="remember" checked> تذكّرني على هذا الجهاز</label>
@@ -101,13 +114,19 @@
         <button type="button" class="btn btn-sm btn-gold" id="staff-notify-btn">🔔 تفعيل إشعارات التذكير</button>
         <button type="button" class="link-btn" data-logout>تسجيل الخروج</button>
       </div>
+      <div id="staff-prompt-banner" class="prompt-banner hidden">
+        <span id="staff-prompt-text">📲 ثبّت تطبيق الكادر وفعّل الإشعارات لتصلك تنبيهات الإدارة.</span>
+        <div style="display:flex;gap:6px">
+          <button type="button" class="btn btn-sm btn-blue hidden" id="btn-install-staff">⬇️ تثبيت</button>
+          <button type="button" class="btn btn-sm btn-gold hidden" id="btn-banner-staff-notify">🔔 تفعيل</button>
+        </div>
+      </div>
       <h2 id="welcome-message"></h2>
       <p class="subtitle">إرسال التحضير اليومي — إعدادية الرياحي</p>
 
       <form id="daily-form">
         <label for="class-select">الصف والمادة</label>
         <select id="class-select" required></select>
-
         <label>الشعب المشمولة</label>
         <div id="divisions-box" class="chips"></div>
 
@@ -163,9 +182,9 @@
   <div id="admin-view" class="view">
     <div class="container wide">
       <div class="topbar">
-        <span style="font-weight:700;color:var(--navy)">لوحة تحكم إعدادية الرياحي</span>
+        <span style="font-weight:800;color:var(--navy)">لوحة تحكم إعدادية الرياحي</span>
         <div style="display:flex;gap:10px;align-items:center">
-          <button type="button" class="btn btn-sm" id="admin-refresh-btn">🔄 تحديث البيانات</button>
+          <button type="button" class="btn btn-sm" id="admin-refresh-btn">🔄 تحديث</button>
           <button type="button" class="link-btn" data-logout>تسجيل الخروج</button>
         </div>
       </div>
@@ -173,20 +192,20 @@
 
       <div class="tabs">
         <button type="button" class="tab active" data-tab="notify">🔔 الإشعارات</button>
-        <button type="button" class="tab" data-tab="users">👨‍🏫 الكادر</button>
+        <button type="button" class="tab" data-tab="users">👨‍🏫 الكادر والإسناد</button>
+        <button type="button" class="tab" data-tab="schedules">📅 الجداول</button>
         <button type="button" class="tab" data-tab="classes">🏫 الصفوف</button>
-        <button type="button" class="tab" data-tab="assignments">📚 الإسناد والمواد</button>
         <button type="button" class="tab" data-tab="settings">⚙️ الإعدادات</button>
         <button type="button" class="tab" data-tab="log">🗂️ السجل</button>
       </div>
       <div id="admin-status" class="status"></div>
 
-      <!-- 1. الإشعارات الفورية -->
+      <!-- 1. الإشعارات -->
       <div class="panel active" id="panel-notify">
         <div class="card">
-          <h4>إرسال إشعار فوري للطلاب أو المدرسين</h4>
+          <h4>إرسال إشعار فوري (يعرض عدد الأجهزة المستلمة تلقائياً)</h4>
           <label for="n-body">نص الإشعار</label>
-          <textarea id="n-body" rows="3" placeholder="اكتب نص الإشعار هنا...">يرجى متابعة التحضير اليومي والواجبات المنشورة.</textarea>
+          <textarea id="n-body" rows="3">يرجى متابعة التحضير اليومي والواجبات المنشورة.</textarea>
           <div class="row" style="margin-top:14px">
             <button type="button" class="btn btn-blue" data-push="students">📢 إشعار لجميع الطلاب</button>
             <button type="button" class="btn btn-gold" data-push="teachers">👨‍🏫 إشعار لجميع المدرسين</button>
@@ -195,40 +214,103 @@
         </div>
       </div>
 
-      <!-- 2. إدارة الكادر (المدرسون والمدراء) -->
+      <!-- 2. الكادر والإسناد الموحد + البحث -->
       <div class="panel" id="panel-users">
         <div class="card">
-          <h4 id="u-form-title">إضافة مدرس أو مدير جديد</h4>
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+            <h4 id="u-form-title" style="margin:0">➕ إضافة مستخدم جديد وإسناد مهامه</h4>
+            <button type="button" class="btn btn-sm" id="u-reset">➕ مستخدم جديد</button>
+          </div>
           <input type="hidden" id="u-orig">
           <div class="row">
             <div><label for="u-id">رمز الدخول (UserID)</label><input type="text" id="u-id" placeholder="مثال: T01"></div>
             <div><label for="u-name">الاسم الكامل</label><input type="text" id="u-name" placeholder="مثال: أستاذ علي محمد"></div>
           </div>
           <label class="check"><input type="checkbox" id="u-admin"> منح صلاحية مدير للنظام</label>
-          <div style="display:flex;gap:8px;margin-top:10px">
-            <button type="button" class="btn btn-blue" id="u-save">💾 حفظ المستخدم</button>
-            <button type="button" class="btn" id="u-reset">إلغاء / جديد</button>
+
+          <!-- قسم إسناد المهام المدمج لنفس المدرس -->
+          <div id="u-assign-box" style="margin-top:12px;padding-top:12px;border-top:1px dashed var(--border)">
+            <label style="color:var(--primary-dark);margin-top:0">📚 المواد والصفوف المسندة لهذا المدرس:</label>
+            <div class="row">
+              <div><label for="ua-class">الصف</label><select id="ua-class"></select></div>
+              <div><label for="ua-subj">المادة</label><select id="ua-subj"></select></div>
+            </div>
+            <label>اختر الشعب:</label>
+            <div id="ua-divs" class="chips"></div>
+            <button type="button" class="btn btn-sm btn-green" id="ua-add" style="margin-top:10px">➕ إضافة هذه المهمة لقائمة المدرس</button>
+            <div id="ua-list" style="margin-top:10px"></div>
+          </div>
+
+          <button type="button" class="btn btn-primary" id="u-save-all" style="margin-top:14px">💾 حفظ بيانات المستخدم وجميع إسناداته</button>
+        </div>
+
+        <div class="card">
+          <h4>📖 قائمة المواد الدراسية المتاحة</h4>
+          <div class="row" style="align-items:flex-end">
+            <div><input type="text" id="s-list" placeholder="فيزياء، كيمياء، رياضيات، عربي..."></div>
+            <div style="flex:0 0 auto"><button type="button" class="btn btn-blue" id="s-save">💾 حفظ المواد</button></div>
           </div>
         </div>
+
+        <div class="card" style="padding:12px">
+          <input type="search" id="u-search" placeholder="🔍 ابحث عن مدرس أو مدير بالاسم أو الرمز أو المادة...">
+        </div>
+
         <div class="table-wrap">
           <table>
-            <thead><tr><th>الرمز</th><th>الاسم</th><th>الصلاحية</th><th>إجراءات</th></tr></thead>
+            <thead><tr><th>الرمز</th><th>الاسم</th><th>الصلاحية / الإسنادات</th><th>إجراءات</th></tr></thead>
             <tbody id="users-body"></tbody>
           </table>
         </div>
       </div>
 
-      <!-- 3. إدارة الصفوف والشعب -->
+      <!-- 3. إدارة الجداول (أسبوعي + امتحانات) -->
+      <div class="panel" id="panel-schedules">
+        <div class="card">
+          <h4>📅 الجدول الأسبوعي (حسب الصف والشعبة — يتعدل مباشرة)</h4>
+          <div class="row">
+            <div><label for="sw-class">الصف</label><select id="sw-class"></select></div>
+            <div><label for="sw-div">الشعبة</label><select id="sw-div"></select></div>
+            <div><label for="sw-title">العنوان</label><input type="text" id="sw-title" value="الجدول الأسبوعي"></div>
+          </div>
+          <div class="table-wrap" style="margin-top:12px">
+            <table>
+              <thead><tr><th>اليوم</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th></tr></thead>
+              <tbody id="sw-grid"></tbody>
+            </table>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button type="button" class="btn btn-blue" id="sw-save">💾 حفظ الجدول الأسبوعي</button>
+            <button type="button" class="btn btn-red" id="sw-del">🗑️ حذف الجدول</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h4>📝 جدول الامتحانات (موحد لجميع شعب الصف — يتعدل مباشرة)</h4>
+          <div class="row">
+            <div><label for="se-class">الصف</label><select id="se-class"></select></div>
+            <div><label for="se-title">عنوان الجدول</label><input type="text" id="se-title" placeholder="مثال: جدول الامتحانات الشهرية"></div>
+          </div>
+          <div id="se-rows" style="margin-top:12px"></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+            <button type="button" class="btn btn-green" id="se-add-row">➕ إضافة امتحان</button>
+            <button type="button" class="btn btn-blue" id="se-save">💾 حفظ جدول الامتحانات</button>
+            <button type="button" class="btn btn-red" id="se-del">🗑️ حذف الجدول</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. الصفوف -->
       <div class="panel" id="panel-classes">
         <div class="card">
           <h4 id="c-form-title">إضافة صف جديد</h4>
           <input type="hidden" id="c-orig">
           <div class="row">
-            <div><label for="c-id">رمز الصف (ClassID)</label><input type="text" id="c-id" placeholder="مثال: C4"></div>
+            <div><label for="c-id">رمز الصف</label><input type="text" id="c-id" placeholder="مثال: C4"></div>
             <div><label for="c-name">اسم الصف</label><input type="text" id="c-name" placeholder="مثال: الرابع العلمي"></div>
           </div>
           <div class="row">
-            <div><label for="c-tg">معرف قناة التليجرام</label><input type="text" id="c-tg" placeholder="مثال: -1001234567890"></div>
+            <div><label for="c-tg">معرف قناة التليجرام</label><input type="text" id="c-tg" placeholder="-100..."></div>
             <div><label for="c-divs">الشعب (مفصولة بفاصلة)</label><input type="text" id="c-divs" placeholder="أ، ب، ج، د، هـ"></div>
           </div>
           <div style="display:flex;gap:8px;margin-top:12px">
@@ -238,81 +320,40 @@
         </div>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>الرمز</th><th>اسم الصف</th><th>الشعب</th><th>قناة التليجرام</th><th>إجراءات</th></tr></thead>
+            <thead><tr><th>الرمز</th><th>الصف</th><th>الشعب</th><th>القناة</th><th>إجراءات</th></tr></thead>
             <tbody id="classes-body"></tbody>
           </table>
         </div>
       </div>
 
-      <!-- 4. الإسناد والمواد -->
-      <div class="panel" id="panel-assignments">
-        <div class="card">
-          <h4>إدارة قائمة المواد الدراسية</h4>
-          <label for="s-list">المواد (مفصولة بفاصلة)</label>
-          <input type="text" id="s-list" placeholder="فيزياء، كيمياء، رياضيات، عربي، إنكليزي...">
-          <button type="button" class="btn btn-blue" id="s-save" style="margin-top:10px">💾 حفظ قائمة المواد</button>
-        </div>
-
-        <div class="card">
-          <h4>إسناد مادة وشعب لمدرس</h4>
-          <div class="row">
-            <div><label for="a-user">المدرس</label><select id="a-user"></select></div>
-            <div><label for="a-class">الصف</label><select id="a-class"></select></div>
-            <div><label for="a-subject">المادة</label><select id="a-subject"></select></div>
-          </div>
-          <label>الشعب المسندة (إلغاء تحديد الكل يحذف الإسناد)</label>
-          <div id="a-divs" class="chips"></div>
-          <button type="button" class="btn btn-blue" id="a-save" style="margin-top:14px">💾 حفظ الإسناد</button>
-        </div>
-
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>المدرس</th><th>الصف</th><th>المادة</th><th>الشعب</th><th>إجراء</th></tr></thead>
-            <tbody id="assignments-body"></tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- 5. الإعدادات العامة -->
+      <!-- 5. الإعدادات -->
       <div class="panel" id="panel-settings">
         <div class="card">
           <h4>أوقات النشر المسموحة</h4>
-          <label class="check"><input type="checkbox" id="set-time-en"> تفعيل تحديد وقت النشر اليومي (بتوقيت بغداد)</label>
+          <label class="check"><input type="checkbox" id="set-time-en"> تفعيل تحديد وقت النشر اليومي (بغداد)</label>
           <div class="row">
-            <div><label for="set-start">من الساعة (0 - 23)</label><input type="number" id="set-start" min="0" max="23"></div>
-            <div><label for="set-end">إلى الساعة (1 - 24)</label><input type="number" id="set-end" min="1" max="24"></div>
+            <div><label for="set-start">من الساعة</label><input type="number" id="set-start" min="0" max="23"></div>
+            <div><label for="set-end">إلى الساعة</label><input type="number" id="set-end" min="1" max="24"></div>
           </div>
         </div>
-
         <div class="card">
-          <h4>خلاصة التحضير اليومي (الصورة)</h4>
-          <label class="check"><input type="checkbox" id="set-sum-en"> تفعيل نشر صورة الخلاصة تلقائياً في التليجرام</label>
-          <label for="set-sum-title">عنوان صورة الخلاصة</label>
-          <input type="text" id="set-sum-title">
+          <h4>الخلاصة والتذكير التلقائي</h4>
+          <label class="check"><input type="checkbox" id="set-sum-en"> تفعيل نشر صورة الخلاصة</label>
+          <label for="set-sum-title">عنوان الخلاصة</label><input type="text" id="set-sum-title">
+          <label class="check"><input type="checkbox" id="set-rem-en"> تفعيل التذكير التلقائي للمدرسين</label>
+          <label class="check"><input type="checkbox" id="set-skip-wk"> إيقاف التذكير الجمعة والسبت</label>
+          <label for="set-rem-hrs">ساعات التذكير (24 ساعة)</label><input type="text" id="set-rem-hrs" placeholder="16, 18">
         </div>
-
         <div class="card">
-          <h4>التذكير التلقائي للمدرسين</h4>
-          <label class="check"><input type="checkbox" id="set-rem-en"> تفعيل التذكير التلقائي لمن لم يرفع تحضيره</label>
-          <label class="check"><input type="checkbox" id="set-skip-wk"> إيقاف التذكير يومي الجمعة والسبت</label>
-          <label for="set-rem-hrs">ساعات التذكير (بنظام 24 ساعة، مفصولة بفاصلة)</label>
-          <input type="text" id="set-rem-hrs" placeholder="16, 18">
-        </div>
-
-        <div class="card">
-          <h4>روابط البوابة (لإشعارات OneSignal)</h4>
+          <h4>روابط البوابة والتذييل</h4>
           <div class="row">
-            <div><label for="set-stu-url">رابط بوابة الطالب</label><input type="url" id="set-stu-url" placeholder="https://riyahi.netlify.app"></div>
-            <div><label for="set-stf-url">رابط بوابة الكادر</label><input type="url" id="set-stf-url" placeholder="https://riyahi.netlify.app/staff.html"></div>
+            <div><label for="set-stu-url">رابط الطالب</label><input type="url" id="set-stu-url"></div>
+            <div><label for="set-stf-url">رابط الكادر</label><input type="url" id="set-stf-url"></div>
           </div>
+          <label for="set-footer">التذييل الثابت لرسائل التليجرام</label>
+          <textarea id="set-footer" rows="4"></textarea>
         </div>
-
-        <div class="card">
-          <h4>التذييل الثابت لرسائل التليجرام</h4>
-          <textarea id="set-footer" rows="5"></textarea>
-        </div>
-
-        <button type="button" class="btn btn-primary" id="set-save" style="margin-top:0">💾 حفظ جميع الإعدادات</button>
+        <button type="button" class="btn btn-primary" id="set-save" style="margin-top:0">💾 حفظ الإعدادات</button>
       </div>
 
       <!-- 6. السجل -->
@@ -335,10 +376,11 @@
 
 <script>
   const CONFIG = {
-    API_URL: "https://script.google.com/macros/s/AKfycbzZPqtdS9kJSe-cTBiISAHN6m-8B6UO3vdFvWQGi7sx81zlwZmuzcUrO29zd5D5Rw3bLQ/exec",
+    API_URL: "https://script.google.com/macros/s/AKfycbwnsBQhlEFP9CTZOvMrUvYMSlgg12hvt4NkIFHMRtECHHqJ1xa3YQyYDfhB9zY8G1MOWA/exec",
     ONESIGNAL_APP_ID: "649b3d75-0371-4630-8294-0cbd915c454b"
   };
 
+  const DAYS_AR = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس'];
   const $ = id => document.getElementById(id);
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
   const norm = v => String(v || '').trim().toUpperCase();
@@ -346,11 +388,38 @@
 
   let authToken = localStorage.getItem('riyahi_staff_token') || '';
   let currentUser = null, teacherOptions = [], filesQueue = [], adminData = null;
+  let draftAssignments = []; // مهام المستخدم الجاري تعديله/إضافته
+  let deferredPrompt = null, notifyGranted = false;
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault(); deferredPrompt = e;
+    $('login-install-banner').classList.remove('hidden');
+    refreshStaffBanner();
+  });
+
+  async function triggerInstall() {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+    deferredPrompt = null;
+    $('login-install-banner').classList.add('hidden');
+    refreshStaffBanner();
+  }
+  $('btn-install-login').addEventListener('click', triggerInstall);
+  $('btn-install-staff').addEventListener('click', triggerInstall);
+
+  function refreshStaffBanner() {
+    const needInstall = !isStandalone && !!deferredPrompt;
+    const needNotify = !notifyGranted;
+    $('staff-prompt-banner').classList.toggle('hidden', !needInstall && !needNotify);
+    $('btn-install-staff').classList.toggle('hidden', !needInstall);
+    $('btn-banner-staff-notify').classList.toggle('hidden', !needNotify);
+  }
 
   async function api(action, payload = {}) {
     const res = await fetch(CONFIG.API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify({ action, token: authToken, ...payload })
     });
     return res.json();
@@ -359,30 +428,29 @@
   window.OneSignalDeferred = window.OneSignalDeferred || [];
   OneSignalDeferred.push(async function(OneSignal) {
     await OneSignal.init({ appId: CONFIG.ONESIGNAL_APP_ID, allowLocalhostAsSecureOrigin: true });
-    if (OneSignal.Notifications.permission && currentUser && !currentUser.isAdmin) {
+    notifyGranted = !!OneSignal.Notifications.permission;
+    refreshStaffBanner();
+    if (notifyGranted && currentUser && !currentUser.isAdmin) {
       await OneSignal.User.addTags({ role: 'teacher', teacher_id: norm(currentUser.userId) });
       $('staff-notify-btn').textContent = '✔️ الإشعارات مفعّلة';
     }
   });
 
-  $('staff-notify-btn').addEventListener('click', () => {
+  function requestStaffNotify() {
     OneSignalDeferred.push(async function(OneSignal) {
       await OneSignal.Notifications.requestPermission();
       if (OneSignal.Notifications.permission && currentUser) {
+        notifyGranted = true; refreshStaffBanner();
         await OneSignal.User.addTags({ role: 'teacher', teacher_id: norm(currentUser.userId) });
         $('staff-notify-btn').textContent = '✔️ الإشعارات مفعّلة';
       }
     });
-  });
+  }
+  $('staff-notify-btn').addEventListener('click', requestStaffNotify);
+  $('btn-banner-staff-notify').addEventListener('click', requestStaffNotify);
 
-  function showStatus(el, msg, type) {
-    el.textContent = msg;
-    el.className = 'status ' + (type || 'info');
-    el.style.display = 'block';
-  }
-  function showView(v) {
-    ['login', 'teacher', 'admin'].forEach(x => $(x + '-view').style.display = x === v ? 'block' : 'none');
-  }
+  function showStatus(el, msg, type) { el.textContent = msg; el.className = 'status ' + (type || 'info'); el.style.display = 'block'; }
+  function showView(v) { ['login', 'teacher', 'admin'].forEach(x => $(x + '-view').style.display = x === v ? 'block' : 'none'); }
 
   document.querySelectorAll('.toolbar button').forEach(b => {
     b.addEventListener('mousedown', e => e.preventDefault());
@@ -400,8 +468,7 @@
         if (byToken) localStorage.removeItem('riyahi_staff_token');
         throw new Error(r.error || r.message || 'فشل تسجيل الدخول');
       }
-      authToken = r.token;
-      currentUser = r.user;
+      authToken = r.token; currentUser = r.user;
       if ($('remember').checked) localStorage.setItem('riyahi_staff_token', authToken);
       $('login-status').style.display = 'none';
 
@@ -409,72 +476,43 @@
         teacherOptions = r.data.options || [];
         $('welcome-message').textContent = 'أهلاً بك، ' + r.user.userName;
         $('class-select').innerHTML = teacherOptions.map((o, i) => `<option value="${i}">${esc(o.className)} — ${esc(o.subject)}</option>`).join('');
-        renderDivs();
-        showView('teacher');
-        OneSignalDeferred.push(async function(OneSignal) {
-          if (OneSignal.Notifications.permission) {
-            await OneSignal.User.addTags({ role: 'teacher', teacher_id: norm(currentUser.userId) });
-            $('staff-notify-btn').textContent = '✔️ الإشعارات مفعّلة';
-          }
-        });
+        renderDivs(); showView('teacher'); refreshStaffBanner();
       } else {
         $('admin-welcome-message').textContent = 'أهلاً بك، ' + r.user.userName;
         const d = new Date();
         $('l-date').value = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-        adminData = r.data;
-        renderAdminAll();
-        showView('admin');
+        adminData = r.data; renderAdminAll(); showView('admin');
       }
     } catch (err) {
       showStatus($('login-status'), err.message, 'error');
-    } finally {
-      $('login-btn').disabled = false;
-    }
+    } finally { $('login-btn').disabled = false; }
   }
 
   $('login-form').addEventListener('submit', e => { e.preventDefault(); doLogin(false); });
   document.querySelectorAll('[data-logout]').forEach(b => b.addEventListener('click', () => {
-    localStorage.removeItem('riyahi_staff_token');
-    authToken = ''; currentUser = null; adminData = null;
-    showView('login');
+    localStorage.removeItem('riyahi_staff_token'); authToken = ''; currentUser = null; adminData = null; showView('login');
   }));
 
-  // =================================================================
-  // TEACHER LOGIC
-  // =================================================================
+  // --- TEACHER ---
   function renderDivs() {
     const opt = teacherOptions[+$('class-select').value];
     if (!opt) return;
-    $('divisions-box').innerHTML = opt.divisions.map(d =>
-      `<label class="chip on"><input type="checkbox" value="${esc(d)}" checked>شعبة ${esc(d)}</label>`
-    ).join('');
+    $('divisions-box').innerHTML = opt.divisions.map(d => `<label class="chip on"><input type="checkbox" value="${esc(d)}" checked>شعبة ${esc(d)}</label>`).join('');
   }
   $('class-select').addEventListener('change', renderDivs);
-  $('divisions-box').addEventListener('change', () => {
-    $('divisions-box').querySelectorAll('.chip').forEach(c => c.classList.toggle('on', c.querySelector('input').checked));
-  });
-
+  $('divisions-box').addEventListener('change', () => $('divisions-box').querySelectorAll('.chip').forEach(c => c.classList.toggle('on', c.querySelector('input').checked)));
   $('file-input').addEventListener('change', e => {
     filesQueue = [...e.target.files].slice(0, 10);
     $('file-list').innerHTML = filesQueue.map(f => `<li style="font-size:13px;margin-top:4px">📎 ${esc(f.name)}</li>`).join('');
   });
-
-  function toBase64(file) {
-    return new Promise((res, rej) => {
-      const r = new FileReader();
-      r.onload = () => res(String(r.result).split(',')[1] || '');
-      r.onerror = () => rej(r.error);
-      r.readAsDataURL(file);
-    });
-  }
+  function toBase64(file) { return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(',')[1] || ''); r.onerror = () => rej(r.error); r.readAsDataURL(file); }); }
 
   $('daily-form').addEventListener('submit', async e => {
     e.preventDefault();
     const opt = teacherOptions[+$('class-select').value];
     const divisions = [...$('divisions-box').querySelectorAll('input:checked')].map(i => i.value);
     if (!divisions.length) { showStatus($('teacher-status'), 'اختر شعبة واحدة على الأقل.', 'error'); return; }
-    const f = $('daily-form');
-    $('submit-btn').disabled = true;
+    const f = $('daily-form'); $('submit-btn').disabled = true;
     showStatus($('teacher-status'), 'جاري إرسال التحضير...', 'info');
     try {
       const r = await api('submitPreparation', {
@@ -489,24 +527,15 @@
       for (let i = 0; i < filesQueue.length; i++) {
         showStatus($('teacher-status'), `جاري رفع الملف ${i+1} من ${filesQueue.length}...`, 'info');
         const data = await toBase64(filesQueue[i]);
-        await api('uploadAttachment', {
-          file: { userId: currentUser.userId, classId: opt.classId, subject: opt.subject, divisions: divisions.join('، '), name: filesQueue[i].name, type: filesQueue[i].type, data }
-        });
+        await api('uploadAttachment', { file: { userId: currentUser.userId, classId: opt.classId, subject: opt.subject, divisions: divisions.join('، '), name: filesQueue[i].name, type: filesQueue[i].type, data } });
       }
       await api('publishDailySummary', { classId: opt.classId });
       showStatus($('teacher-status'), '✔️ تم إرسال التحضير ونشر الخلاصة وإشعار الطلاب بنجاح!', 'success');
-      f.reset(); $('prev-editor').innerHTML = ''; $('next-editor').innerHTML = ''; filesQueue = []; $('file-list').innerHTML = '';
-      renderDivs();
-    } catch (err) {
-      showStatus($('teacher-status'), err.message, 'error');
-    } finally {
-      $('submit-btn').disabled = false;
-    }
+      f.reset(); $('prev-editor').innerHTML = ''; $('next-editor').innerHTML = ''; filesQueue = []; $('file-list').innerHTML = ''; renderDivs();
+    } catch (err) { showStatus($('teacher-status'), err.message, 'error'); } finally { $('submit-btn').disabled = false; }
   });
 
-  // =================================================================
-  // ADMIN PANEL LOGIC
-  // =================================================================
+  // --- ADMIN ---
   document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
     document.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x === t));
     document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + t.dataset.tab));
@@ -517,67 +546,120 @@
     try {
       const r = await api(action, payload);
       if (!r.success) throw new Error(r.message || 'فشل الإجراء');
-      if (r.data) {
-        adminData = r.data;
-        renderAdminAll();
-      }
+      if (r.data) { adminData = r.data; renderAdminAll(); }
       if (r.message) showStatus($('admin-status'), r.message, 'success');
       else $('admin-status').style.display = 'none';
       return r;
-    } catch (err) {
-      showStatus($('admin-status'), err.message, 'error');
-      return null;
-    }
+    } catch (err) { showStatus($('admin-status'), err.message, 'error'); return null; }
   }
-
-  $('admin-refresh-btn').addEventListener('click', () => runAdminApi('getAdminData', {}, 'جاري تحديث البيانات...'));
+  $('admin-refresh-btn').addEventListener('click', () => runAdminApi('getAdminData', {}, 'جاري التحديث...'));
 
   function renderAdminAll() {
     if (!adminData) return;
+    $('s-list').value = (adminData.subjects || []).join('، ');
+    populateUnifiedDropdowns();
     renderUsersTable();
     renderClassesTable();
-    renderSubjectsAndAssignments();
+    initSchedulesUI();
     renderSettingsForm();
   }
 
-  // --- 1. Notifications ---
+  // 1. الإشعارات
   document.querySelectorAll('[data-push]').forEach(btn => btn.addEventListener('click', () => {
-    const targetMap = { students: 'students_all', teachers: 'teachers_all', missing: 'teachers_missing' };
-    runAdminApi('sendInstantNotification', {
-      target: targetMap[btn.dataset.push] || btn.dataset.push,
-      customMessage: $('n-body').value.trim()
-    }, 'جاري إرسال الإشعار...');
+    const map = { students: 'students_all', teachers: 'teachers_all', missing: 'teachers_missing' };
+    runAdminApi('sendInstantNotification', { target: map[btn.dataset.push], customMessage: $('n-body').value.trim() }, 'جاري الإرسال...');
   }));
 
-  // --- 2. Users ---
+  // 2. الكادر والإسناد الموحد + البحث
+  function populateUnifiedDropdowns() {
+    const classes = adminData.classes || [], subjects = adminData.subjects || [];
+    $('ua-class').innerHTML = classes.map(c => `<option value="${esc(c.classId)}">${esc(c.className)}</option>`).join('');
+    $('ua-subj').innerHTML = subjects.map(s => `<option value="${esc(s)}">${esc(s)}</option>`).join('');
+    renderUaDivs();
+  }
+  function renderUaDivs() {
+    const cls = (adminData.classes || []).find(c => c.classId === $('ua-class').value);
+    const divs = (cls && cls.divisions) ? cls.divisions : [];
+    $('ua-divs').innerHTML = divs.map(d => `<label class="chip"><input type="checkbox" value="${esc(d)}">شعبة ${esc(d)}</label>`).join('');
+  }
+  $('ua-class').addEventListener('change', renderUaDivs);
+  $('ua-divs').addEventListener('change', () => $('ua-divs').querySelectorAll('.chip').forEach(c => c.classList.toggle('on', c.querySelector('input').checked)));
+  $('u-admin').addEventListener('change', () => $('u-assign-box').classList.toggle('hidden', $('u-admin').checked));
+
+  $('ua-add').addEventListener('click', () => {
+    const cid = $('ua-class').value, subj = $('ua-subj').value;
+    const divs = [...$('ua-divs').querySelectorAll('input:checked')].map(i => i.value);
+    if (!cid || !subj || !divs.length) { showStatus($('admin-status'), 'اختر الصف والمادة وشعبة واحدة على الأقل.', 'error'); return; }
+    const existing = draftAssignments.find(x => norm(x.classId) === norm(cid) && x.subject === subj);
+    if (existing) existing.divisions = [...new Set([...existing.divisions, ...divs])];
+    else draftAssignments.push({ classId: cid, subject: subj, divisions: divs });
+    renderDraftAssignments();
+  });
+
+  function renderDraftAssignments() {
+    const cMap = {}; (adminData.classes || []).forEach(c => cMap[norm(c.classId)] = c.className);
+    $('ua-list').innerHTML = draftAssignments.map((a, idx) =>
+      `<span class="assign-pill"><b>${esc(a.subject)}</b> — ${esc(cMap[norm(a.classId)] || a.classId)} (${esc(a.divisions.join('، '))}) <button type="button" class="btn btn-sm btn-red" data-rm-draft="${idx}" style="padding:1px 6px">✕</button></span>`
+    ).join('') || '<span style="font-size:12.5px;color:#6b7280">لا توجد مهام مضافة بعد.</span>';
+  }
+  $('ua-list').addEventListener('click', e => {
+    const b = e.target.closest('[data-rm-draft]');
+    if (b) { draftAssignments.splice(+b.dataset.rmDraft, 1); renderDraftAssignments(); }
+  });
+
   function resetUserForm() {
     $('u-orig').value = ''; $('u-id').value = ''; $('u-name').value = ''; $('u-admin').checked = false;
-    $('u-form-title').textContent = 'إضافة مدرس أو مدير جديد';
+    $('u-assign-box').classList.remove('hidden');
+    draftAssignments = []; renderDraftAssignments();
+    $('u-form-title').textContent = '➕ إضافة مستخدم جديد وإسناد مهامه';
   }
   $('u-reset').addEventListener('click', resetUserForm);
-  $('u-save').addEventListener('click', async () => {
-    const r = await runAdminApi('saveUser', {
-      user: {
-        originalId: $('u-orig').value,
-        userId: $('u-id').value.trim(),
-        userName: $('u-name').value.trim(),
-        isAdmin: $('u-admin').checked
+
+  $('u-save-all').addEventListener('click', async () => {
+    const r = await runAdminApi('saveUserWithAssignments', {
+      payload: {
+        user: { originalId: $('u-orig').value, userId: $('u-id').value.trim(), userName: $('u-name').value.trim(), isAdmin: $('u-admin').checked },
+        assignments: draftAssignments
       }
-    }, 'جاري حفظ المستخدم...');
+    }, 'جاري حفظ المستخدم وإسناداته...');
     if (r) resetUserForm();
   });
 
+  $('s-save').addEventListener('click', () => runAdminApi('saveSubjects', { subjects: splitList($('s-list').value) }, 'جاري حفظ المواد...'));
+  $('u-search').addEventListener('input', renderUsersTable);
+
   function renderUsersTable() {
-    const list = adminData.users || [];
-    $('users-body').innerHTML = list.map(u => `<tr>
-      <td><b>${esc(u.userId)}</b></td>
-      <td>${esc(u.userName)}</td>
-      <td><span class="badge ${u.isAdmin ? 'badge-admin' : 'badge-teacher'}">${u.isAdmin ? 'مدير' : 'مدرس'}</span></td>
-      <td class="actions-cell">
-        <button type="button" class="btn btn-sm btn-gold" data-u-edit="${esc(u.userId)}">تعديل</button>
-        <button type="button" class="btn btn-sm btn-red" data-u-del="${esc(u.userId)}">حذف</button>
-      </td>
-    </tr>`).join('') || '<tr><td colspan="4" style="text-align:center">لا يوجد مستخدمون.</td></tr>';
+    const q = $('u-search').value.trim().toLowerCase();
+    const cMap = {}; (adminData.classes || []).forEach(c => cMap[norm(c.classId)] = c.className);
+    const allAssigns = adminData.assignments || [];
+
+    const list = (adminData.users || []).filter(u => {
+      if (!q) return true;
+      const myAssigns = allAssigns.filter(a => norm(a.userId) === norm(u.userId)).map(a => a.subject).join(' ');
+      return (u.userId + ' ' + u.userName + ' ' + myAssigns).toLowerCase().includes(q);
+    });
+
+    $('users-body').innerHTML = list.map(u => {
+      const grouped = {};
+      allAssigns.filter(a => norm(a.userId) === norm(u.userId)).forEach(a => {
+        const k = norm(a.classId) + '|' + a.subject;
+        if (!grouped[k]) grouped[k] = { className: cMap[norm(a.classId)] || a.classId, subject: a.subject, divs: [] };
+        grouped[k].divs.push(a.division);
+      });
+      const assignHtml = u.isAdmin
+        ? '<span class="badge badge-admin">مدير النظام</span>'
+        : (Object.values(grouped).map(g => `<span class="badge badge-teacher" style="margin:2px">${esc(g.subject)} • ${esc(g.className)} (${esc(g.divs.join('،'))})</span>`).join('') || '<span style="color:#9ca3af;font-size:12px">بدون إسناد</span>');
+
+      return `<tr>
+        <td><b>${esc(u.userId)}</b></td>
+        <td>${esc(u.userName)}</td>
+        <td>${assignHtml}</td>
+        <td class="actions-cell">
+          <button type="button" class="btn btn-sm btn-gold" data-u-edit="${esc(u.userId)}">✏️ تعديل</button>
+          <button type="button" class="btn btn-sm btn-red" data-u-del="${esc(u.userId)}">حذف</button>
+        </td>
+      </tr>`;
+    }).join('') || '<tr><td colspan="4" style="text-align:center">لا توجد نتائج.</td></tr>';
   }
 
   $('users-body').addEventListener('click', e => {
@@ -585,202 +667,149 @@
     if (ed) {
       const u = (adminData.users || []).find(x => x.userId === ed.dataset.uEdit);
       if (!u) return;
-      $('u-orig').value = u.userId;
-      $('u-id').value = u.userId;
-      $('u-name').value = u.userName;
-      $('u-admin').checked = !!u.isAdmin;
-      $('u-form-title').textContent = 'تعديل بيانات: ' + u.userName;
+      $('u-orig').value = u.userId; $('u-id').value = u.userId; $('u-name').value = u.userName; $('u-admin').checked = !!u.isAdmin;
+      $('u-assign-box').classList.toggle('hidden', !!u.isAdmin);
+      const grouped = {};
+      (adminData.assignments || []).filter(a => norm(a.userId) === norm(u.userId)).forEach(a => {
+        const k = norm(a.classId) + '|' + a.subject;
+        if (!grouped[k]) grouped[k] = { classId: a.classId, subject: a.subject, divisions: [] };
+        grouped[k].divisions.push(a.division);
+      });
+      draftAssignments = Object.values(grouped);
+      renderDraftAssignments();
+      $('u-form-title').textContent = '✏️ تعديل المستخدم وإسناداته: ' + u.userName;
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
     const del = e.target.closest('[data-u-del]');
-    if (del && confirm(`هل أنت متأكد من حذف المستخدم (${del.dataset.uDel}) وجميع إسناداته؟`)) {
+    if (del && confirm(`حذف المستخدم (${del.dataset.uDel}) وجميع إسناداته؟`)) {
       runAdminApi('deleteUser', { targetUserId: del.dataset.uDel }, 'جاري الحذف...');
     }
   });
 
-  // --- 3. Classes ---
-  function resetClassForm() {
-    $('c-orig').value = ''; $('c-id').value = ''; $('c-name').value = ''; $('c-tg').value = ''; $('c-divs').value = '';
-    $('c-form-title').textContent = 'إضافة صف جديد';
+  // 3. إدارة الجداول (الأسبوعي + الامتحانات)
+  function initSchedulesUI() {
+    const classes = adminData.classes || [];
+    const prevW = $('sw-class').value, prevE = $('se-class').value;
+    const opts = classes.map(c => `<option value="${esc(c.classId)}">${esc(c.className)}</option>`).join('');
+    $('sw-class').innerHTML = opts; $('se-class').innerHTML = opts;
+    if (prevW) $('sw-class').value = prevW;
+    if (prevE) $('se-class').value = prevE;
+    populateSwDivs();
+    loadExamEditor();
   }
-  $('c-reset').addEventListener('click', resetClassForm);
-  $('c-save').addEventListener('click', async () => {
-    const r = await runAdminApi('saveClass', {
-      cls: {
-        originalId: $('c-orig').value,
-        classId: $('c-id').value.trim(),
-        className: $('c-name').value.trim(),
-        telegramChannelId: $('c-tg').value.trim(),
-        divisions: splitList($('c-divs').value)
-      }
-    }, 'جاري حفظ الصف...');
-    if (r) resetClassForm();
+  function populateSwDivs() {
+    const cls = (adminData.classes || []).find(c => c.classId === $('sw-class').value);
+    const divs = (cls && cls.divisions) ? cls.divisions : ['أ', 'ب', 'ج', 'د', 'هـ'];
+    $('sw-div').innerHTML = divs.map(d => `<option value="${esc(d)}">شعبة ${esc(d)}</option>`).join('');
+    loadWeeklyEditor();
+  }
+  function loadWeeklyEditor() {
+    const cid = $('sw-class').value, div = $('sw-div').value;
+    const found = (adminData.schedules || []).find(s => s.type === 'weekly' && norm(s.classId) === norm(cid) && s.division === div);
+    $('sw-title').value = found ? found.title : 'الجدول الأسبوعي';
+    const data = (found && found.data) ? found.data : {};
+    $('sw-grid').innerHTML = DAYS_AR.map(day => {
+      const arr = data[day] || [];
+      return `<tr><td><b>${day}</b></td>${[0,1,2,3,4,5].map(i => `<td><input type="text" data-sw-day="${day}" data-sw-i="${i}" value="${esc(arr[i] || '')}" style="padding:5px;min-width:75px"></td>`).join('')}</tr>`;
+    }).join('');
+  }
+  $('sw-class').addEventListener('change', populateSwDivs);
+  $('sw-div').addEventListener('change', loadWeeklyEditor);
+
+  $('sw-save').addEventListener('click', () => {
+    const data = {};
+    DAYS_AR.forEach(d => data[d] = ['', '', '', '', '', '']);
+    $('sw-grid').querySelectorAll('input').forEach(inp => { data[inp.dataset.swDay][+inp.dataset.swI] = inp.value.trim(); });
+    runAdminApi('saveSchedule', { schedule: { type: 'weekly', classId: $('sw-class').value, division: $('sw-div').value, title: $('sw-title').value.trim(), data } }, 'جاري حفظ الجدول الأسبوعي...');
+  });
+  $('sw-del').addEventListener('click', () => {
+    if (confirm('حذف الجدول الأسبوعي لهذه الشعبة؟')) runAdminApi('deleteSchedule', { schedule: { type: 'weekly', classId: $('sw-class').value, division: $('sw-div').value } }, 'جاري الحذف...');
   });
 
+  function loadExamEditor() {
+    const cid = $('se-class').value;
+    const found = (adminData.schedules || []).find(s => s.type === 'exam' && norm(s.classId) === norm(cid));
+    $('se-title').value = found ? found.title : 'جدول الامتحانات الشهرية';
+    const rows = (found && Array.isArray(found.data)) ? found.data : [];
+    $('se-rows').innerHTML = '';
+    if (rows.length) rows.forEach(r => addExamRow(r.date, r.subject, r.notes));
+    else addExamRow('', '', '');
+  }
+  function addExamRow(date, subject, notes) {
+    const div = document.createElement('div');
+    div.className = 'row se-row';
+    div.style.marginBottom = '8px';
+    div.innerHTML = `<input type="date" class="se-date" value="${esc(date || '')}"><input type="text" class="se-subj" placeholder="المادة" value="${esc(subject || '')}"><input type="text" class="se-notes" placeholder="ملاحظات / الفصول" value="${esc(notes || '')}"><button type="button" class="btn btn-sm btn-red" style="flex:0 0 auto" onclick="this.parentElement.remove()">✕</button>`;
+    $('se-rows').appendChild(div);
+  }
+  $('se-class').addEventListener('change', loadExamEditor);
+  $('se-add-row').addEventListener('click', () => addExamRow('', '', ''));
+  $('se-save').addEventListener('click', () => {
+    const data = [...$('se-rows').querySelectorAll('.se-row')].map(r => ({
+      date: r.querySelector('.se-date').value,
+      subject: r.querySelector('.se-subj').value.trim(),
+      notes: r.querySelector('.se-notes').value.trim()
+    })).filter(x => x.date && x.subject).sort((a, b) => a.date.localeCompare(b.date));
+    runAdminApi('saveSchedule', { schedule: { type: 'exam', classId: $('se-class').value, title: $('se-title').value.trim(), data } }, 'جاري حفظ جدول الامتحانات...');
+  });
+  $('se-del').addEventListener('click', () => {
+    if (confirm('حذف جدول الامتحانات لهذا الصف؟')) runAdminApi('deleteSchedule', { schedule: { type: 'exam', classId: $('se-class').value } }, 'جاري الحذف...');
+  });
+
+  // 4. الصفوف
+  function resetClassForm() { $('c-orig').value = ''; $('c-id').value = ''; $('c-name').value = ''; $('c-tg').value = ''; $('c-divs').value = ''; $('c-form-title').textContent = 'إضافة صف جديد'; }
+  $('c-reset').addEventListener('click', resetClassForm);
+  $('c-save').addEventListener('click', async () => {
+    const r = await runAdminApi('saveClass', { cls: { originalId: $('c-orig').value, classId: $('c-id').value.trim(), className: $('c-name').value.trim(), telegramChannelId: $('c-tg').value.trim(), divisions: splitList($('c-divs').value) } }, 'جاري حفظ الصف...');
+    if (r) resetClassForm();
+  });
   function renderClassesTable() {
-    const list = adminData.classes || [];
-    $('classes-body').innerHTML = list.map(c => `<tr>
-      <td><b>${esc(c.classId)}</b></td>
-      <td>${esc(c.className)}</td>
-      <td>${esc((c.divisions || []).join('، '))}</td>
+    $('classes-body').innerHTML = (adminData.classes || []).map(c => `<tr>
+      <td><b>${esc(c.classId)}</b></td><td>${esc(c.className)}</td><td>${esc((c.divisions || []).join('، '))}</td>
       <td dir="ltr" style="text-align:right">${esc(c.telegramChannelId || '—')}</td>
       <td class="actions-cell">
-        <button type="button" class="btn btn-sm btn-green" data-c-sum="${esc(c.classId)}">📊 نشر الخلاصة</button>
+        <button type="button" class="btn btn-sm btn-green" data-c-sum="${esc(c.classId)}">📊 خلاصة</button>
         <button type="button" class="btn btn-sm btn-gold" data-c-edit="${esc(c.classId)}">تعديل</button>
         <button type="button" class="btn btn-sm btn-red" data-c-del="${esc(c.classId)}">حذف</button>
       </td>
-    </tr>`).join('') || '<tr><td colspan="5" style="text-align:center">لا توجد صفوف.</td></tr>';
+    </tr>`).join('');
   }
-
   $('classes-body').addEventListener('click', e => {
-    const sum = e.target.closest('[data-c-sum]');
-    if (sum) {
-      runAdminApi('sendSummaryNow', { classId: sum.dataset.cSum }, 'جاري إنشاء ونشر صورة الخلاصة...');
-      return;
-    }
+    const sum = e.target.closest('[data-c-sum]'); if (sum) return runAdminApi('sendSummaryNow', { classId: sum.dataset.cSum }, 'جاري نشر الخلاصة...');
     const ed = e.target.closest('[data-c-edit]');
     if (ed) {
-      const c = (adminData.classes || []).find(x => x.classId === ed.dataset.cEdit);
-      if (!c) return;
-      $('c-orig').value = c.classId;
-      $('c-id').value = c.classId;
-      $('c-name').value = c.className;
-      $('c-tg').value = c.telegramChannelId || '';
-      $('c-divs').value = (c.divisions || []).join('، ');
-      $('c-form-title').textContent = 'تعديل صف: ' + c.className;
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      return;
+      const c = (adminData.classes || []).find(x => x.classId === ed.dataset.cEdit); if (!c) return;
+      $('c-orig').value = c.classId; $('c-id').value = c.classId; $('c-name').value = c.className; $('c-tg').value = c.telegramChannelId || ''; $('c-divs').value = (c.divisions || []).join('، ');
+      $('c-form-title').textContent = 'تعديل صف: ' + c.className; window.scrollTo({ top: 0, behavior: 'smooth' }); return;
     }
     const del = e.target.closest('[data-c-del]');
-    if (del && confirm(`هل أنت متأكد من حذف الصف (${del.dataset.cDel}) وجميع إسناداته؟`)) {
-      runAdminApi('deleteClass', { classId: del.dataset.cDel }, 'جاري الحذف...');
-    }
+    if (del && confirm(`حذف الصف (${del.dataset.cDel})؟`)) runAdminApi('deleteClass', { classId: del.dataset.cDel }, 'جاري الحذف...');
   });
 
-  // --- 4. Subjects & Assignments ---
-  $('s-save').addEventListener('click', () => {
-    runAdminApi('saveSubjects', { subjects: splitList($('s-list').value) }, 'جاري حفظ المواد...');
-  });
-
-  function renderSubjectsAndAssignments() {
-    $('s-list').value = (adminData.subjects || []).join('، ');
-
-    const teachers = (adminData.users || []).filter(u => !u.isAdmin);
-    const classes = adminData.classes || [];
-    const subjects = adminData.subjects || [];
-
-    const prevU = $('a-user').value, prevC = $('a-class').value, prevS = $('a-subject').value;
-    $('a-user').innerHTML = teachers.map(u => `<option value="${esc(u.userId)}">${esc(u.userName)} (${esc(u.userId)})</option>`).join('');
-    $('a-class').innerHTML = classes.map(c => `<option value="${esc(c.classId)}">${esc(c.className)}</option>`).join('');
-    $('a-subject').innerHTML = subjects.map(s => `<option value="${esc(s)}">${esc(s)}</option>`).join('');
-    if (prevU) $('a-user').value = prevU;
-    if (prevC) $('a-class').value = prevC;
-    if (prevS) $('a-subject').value = prevS;
-
-    renderAssignmentDivs();
-
-    // تجميع الإسنادات للعرض في الجدول
-    const userMap = {}; (adminData.users || []).forEach(u => userMap[norm(u.userId)] = u.userName);
-    const classMap = {}; classes.forEach(c => classMap[norm(c.classId)] = c.className);
-    const grouped = {};
-    (adminData.assignments || []).forEach(a => {
-      const k = norm(a.userId) + '|' + norm(a.classId) + '|' + a.subject;
-      if (!grouped[k]) grouped[k] = { userId: a.userId, classId: a.classId, subject: a.subject, divisions: [] };
-      if (a.division) grouped[k].divisions.push(a.division);
-    });
-    const rows = Object.values(grouped);
-    $('assignments-body').innerHTML = rows.map(g => `<tr>
-      <td>${esc(userMap[norm(g.userId)] || g.userId)}</td>
-      <td>${esc(classMap[norm(g.classId)] || g.classId)}</td>
-      <td>${esc(g.subject)}</td>
-      <td>${esc(g.divisions.join('، '))}</td>
-      <td><button type="button" class="btn btn-sm btn-red" data-a-del='${esc(JSON.stringify({ userId: g.userId, classId: g.classId, subject: g.subject }))}'>حذف</button></td>
-    </tr>`).join('') || '<tr><td colspan="5" style="text-align:center">لا توجد إسنادات بعد.</td></tr>';
-  }
-
-  function renderAssignmentDivs() {
-    const cid = $('a-class').value;
-    const uid = $('a-user').value;
-    const subj = $('a-subject').value;
-    const cls = (adminData.classes || []).find(c => c.classId === cid);
-    const divs = (cls && cls.divisions) ? cls.divisions : [];
-    const current = (adminData.assignments || [])
-      .filter(a => norm(a.userId) === norm(uid) && norm(a.classId) === norm(cid) && a.subject === subj)
-      .map(a => a.division);
-
-    $('a-divs').innerHTML = divs.map(d => {
-      const on = current.includes(d);
-      return `<label class="chip${on ? ' on' : ''}"><input type="checkbox" value="${esc(d)}"${on ? ' checked' : ''}>شعبة ${esc(d)}</label>`;
-    }).join('') || '<span class="hint">أضف شعباً لهذا الصف أولاً.</span>';
-  }
-
-  ['a-user', 'a-class', 'a-subject'].forEach(id => $(id).addEventListener('change', renderAssignmentDivs));
-  $('a-divs').addEventListener('change', () => {
-    $('a-divs').querySelectorAll('.chip').forEach(c => c.classList.toggle('on', c.querySelector('input').checked));
-  });
-
-  $('a-save').addEventListener('click', () => {
-    const divisions = [...$('a-divs').querySelectorAll('input:checked')].map(i => i.value);
-    runAdminApi('saveAssignment', {
-      assignment: {
-        userId: $('a-user').value,
-        classId: $('a-class').value,
-        subject: $('a-subject').value,
-        divisions
-      }
-    }, 'جاري حفظ الإسناد...');
-  });
-
-  $('assignments-body').addEventListener('click', e => {
-    const del = e.target.closest('[data-a-del]');
-    if (del && confirm('هل أنت متأكد من حذف هذا الإسناد؟')) {
-      runAdminApi('deleteAssignment', { assignment: JSON.parse(del.dataset.aDel) }, 'جاري حذف الإسناد...');
-    }
-  });
-
-  // --- 5. Settings ---
+  // 5. الإعدادات
   function renderSettingsForm() {
     const s = adminData.settings || {};
-    $('set-time-en').checked = !!s.TimeCheckEnabled;
-    $('set-start').value = s.StartTime || '';
-    $('set-end').value = s.EndTime || '';
-    $('set-sum-en').checked = !!s.SummaryEnabled;
-    $('set-sum-title').value = s.SummaryTitle || '';
-    $('set-rem-en').checked = !!s.ReminderEnabled;
-    $('set-skip-wk').checked = !!s.SkipWeekends;
-    $('set-rem-hrs').value = s.ReminderHours || '';
-    $('set-stu-url').value = s.StudentAppUrl || '';
-    $('set-stf-url').value = s.StaffAppUrl || '';
-    $('set-footer').value = s.Footer || '';
+    $('set-time-en').checked = !!s.TimeCheckEnabled; $('set-start').value = s.StartTime || ''; $('set-end').value = s.EndTime || '';
+    $('set-sum-en').checked = !!s.SummaryEnabled; $('set-sum-title').value = s.SummaryTitle || '';
+    $('set-rem-en').checked = !!s.ReminderEnabled; $('set-skip-wk').checked = !!s.SkipWeekends; $('set-rem-hrs').value = s.ReminderHours || '';
+    $('set-stu-url').value = s.StudentAppUrl || ''; $('set-stf-url').value = s.StaffAppUrl || ''; $('set-footer').value = s.Footer || '';
   }
+  $('set-save').addEventListener('click', () => runAdminApi('saveSettings', {
+    settings: {
+      TimeCheckEnabled: $('set-time-en').checked, StartTime: $('set-start').value, EndTime: $('set-end').value,
+      SummaryEnabled: $('set-sum-en').checked, SummaryTitle: $('set-sum-title').value, ReminderEnabled: $('set-rem-en').checked,
+      SkipWeekends: $('set-skip-wk').checked, ReminderHours: $('set-rem-hrs').value, StudentAppUrl: $('set-stu-url').value,
+      StaffAppUrl: $('set-stf-url').value, Footer: $('set-footer').value
+    }
+  }, 'جاري حفظ الإعدادات...'));
 
-  $('set-save').addEventListener('click', () => {
-    runAdminApi('saveSettings', {
-      settings: {
-        TimeCheckEnabled: $('set-time-en').checked,
-        StartTime: $('set-start').value,
-        EndTime: $('set-end').value,
-        SummaryEnabled: $('set-sum-en').checked,
-        SummaryTitle: $('set-sum-title').value,
-        ReminderEnabled: $('set-rem-en').checked,
-        SkipWeekends: $('set-skip-wk').checked,
-        ReminderHours: $('set-rem-hrs').value,
-        StudentAppUrl: $('set-stu-url').value,
-        StaffAppUrl: $('set-stf-url').value,
-        Footer: $('set-footer').value
-      }
-    }, 'جاري حفظ الإعدادات...');
-  });
-
-  // --- 6. Log ---
+  // 6. السجل
   $('log-load').addEventListener('click', async () => {
     $('log-body').innerHTML = '<tr><td colspan="6" style="text-align:center">جاري التحميل...</td></tr>';
     const r = await api('getLog', { dateStr: $('l-date').value });
     if (!r.success) { $('log-body').innerHTML = `<tr><td colspan="6">${esc(r.message)}</td></tr>`; return; }
-    $('log-body').innerHTML = (r.rows || []).map(x =>
-      `<tr><td>${esc(x.time)}</td><td>${esc(x.userName)}</td><td>${esc(x.className)}</td><td>${esc(x.subject)}</td><td>${esc(x.divisions)}</td><td>${esc(x.topic)}</td></tr>`
-    ).join('') || '<tr><td colspan="6" style="text-align:center">لا توجد تحاضير في هذا اليوم.</td></tr>';
+    $('log-body').innerHTML = (r.rows || []).map(x => `<tr><td>${esc(x.time)}</td><td>${esc(x.userName)}</td><td>${esc(x.className)}</td><td>${esc(x.subject)}</td><td>${esc(x.divisions)}</td><td>${esc(x.topic)}</td></tr>`).join('') || '<tr><td colspan="6" style="text-align:center">لا توجد تحاضير.</td></tr>';
   });
 
   if (authToken) doLogin(true);
